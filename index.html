@@ -4,10 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CyberRestart — Digital Resilience System</title>
-    <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico" />
-    <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="assets/images/favicon-16.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="assets/images/apple-touch-icon.png" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%231a3a5c'/><line x1='6' y1='7' x2='20' y2='7' stroke='%232e6b8a' stroke-width='2.5' stroke-linecap='round'/><text x='5' y='26' font-family='Arial Black,sans-serif' font-weight='900' font-size='22' fill='white'>C</text></svg>">
+    <link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet" />
@@ -833,7 +831,7 @@
             <!-- AI Hero Input -->
             <div class="fade-up-intro delay-400 max-w-2xl">
                 <div class="ai-hero-input">
-                    <input type="text" id="hero-ai-input" maxlength="1000" placeholder="Ask our CyberAI anything — questions, challenges, or your current security posture." />
+                    <input type="text" id="hero-ai-input" maxlength="1000" placeholder="Ask about ReSurface, ReVeil, or any security challenge..." />
                     <button id="hero-ai-btn" onclick="handleHeroAI()">Ask</button>
                 </div>
                 <div id="hero-ai-response" class="mt-3 text-sm text-slate-600 min-h-[1.5rem]"></div>
@@ -1216,20 +1214,20 @@
                         <p class="text-slate-300">A lead consultant will reach out shortly.</p>
                     </div>
                 </div>
-                <!-- Individuals & SMEs: real Netlify form, submits to ops@cyberrestart.com -->
+                <!-- Free ReSurface scan: real Netlify form (free-scan-request) -->
                 <div class="flex flex-col h-full bg-cyan-50/70 border border-cyan-100/60 p-10 rounded-3xl shadow-lg hover:shadow-xl transition-shadow backdrop-blur-sm">
-                    <span class="font-mono text-xs font-bold text-cyan-600 tracking-wider uppercase mb-4">INDIVIDUALS &amp; SMEs</span>
-                    <h3 class="font-display text-3xl font-bold text-slate-900 mb-4">Get a free cyber checkup</h3>
-                    <p class="text-slate-600 mb-10 text-lg">Not sure what layer you need yet? We'll assess your current posture and tell you plainly.</p>
-                    <form id="free-checkup-form" name="free-checkup" method="POST" data-netlify="true" netlify-honeypot="bot-field" class="mt-auto flex flex-col gap-3" onsubmit="return submitLeadForm(event, 'free-checkup-form', 'free-checkup-success');">
-                        <input type="hidden" name="form-name" value="free-checkup" />
+                    <p class="font-mono text-xs font-bold text-cyan-600 tracking-wider uppercase mb-4">EARLY ACCESS</p>
+                    <h3 class="font-display text-3xl font-bold text-slate-900 mb-4">Free ReSurface Scan</h3>
+                    <p class="text-slate-600 mb-10 text-lg">Enter your domain and work email. We run a full external attack surface scan and send you the top findings within 24 hours — no commitment required.</p>
+                    <form id="free-scan-form" name="free-scan-request" method="POST" data-netlify="true" netlify-honeypot="bot-field" class="mt-auto flex flex-col gap-3" onsubmit="return submitLeadForm(event, 'free-scan-form', 'free-scan-success');">
+                        <input type="hidden" name="form-name" value="free-scan-request" />
                         <p class="hidden"><label>Don't fill this out: <input name="bot-field" /></label></p>
-                        <input type="text" name="name" placeholder="Full name" required class="w-full bg-white border border-cyan-200 rounded-lg px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500" />
-                        <input type="email" name="email" placeholder="Email" required class="w-full bg-white border border-cyan-200 rounded-lg px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500" />
-                        <input type="text" name="company" placeholder="Company (optional)" class="w-full bg-white border border-cyan-200 rounded-lg px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500" />
-                        <button type="submit" class="inline-flex items-center justify-center bg-cyan-600 text-white hover:bg-slate-900 px-8 py-4 rounded-xl font-bold transition-colors w-max shadow-md mt-1">Get a free checkup</button>
+                        <input type="text" name="domain" placeholder="yourdomain.com" required class="w-full bg-white border border-cyan-200 rounded-lg px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500" />
+                        <input type="email" name="email" placeholder="you@yourcompany.com" required class="w-full bg-white border border-cyan-200 rounded-lg px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500" />
+                        <button type="submit" class="inline-flex items-center justify-center bg-cyan-600 text-white hover:bg-slate-900 px-8 py-4 rounded-xl font-bold transition-colors w-max shadow-md mt-1">Request free scan →</button>
+                        <p class="text-xs text-slate-500">We verify domain ownership before running any scan.</p>
                     </form>
-                    <div id="free-checkup-success" class="hidden mt-auto">
+                    <div id="free-scan-success" class="hidden mt-auto">
                         <p class="text-cyan-700 font-display text-xl font-bold mb-2">Request received.</p>
                         <p class="text-slate-600">We'll follow up with your assessment shortly.</p>
                     </div>
