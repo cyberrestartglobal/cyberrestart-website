@@ -1433,7 +1433,7 @@
                     document.getElementById(successId).classList.remove('hidden');
                 })
                 .catch(() => {
-                    alert("Something went wrong. Please email us directly at intel@cyberrestart.com");
+                    alert("Something went wrong. Please email us directly at hello@cyberrestart.com");
                 })
                 .finally(() => {
                     button.disabled = false;
@@ -1443,7 +1443,7 @@
         }
 
         // ── Hero AI (calls the real Netlify Function → Claude, see netlify/functions/ask.js) ──
-        const AI_TIMEOUT_MESSAGE = "Taking too long to respond. Try again or email intel@cyberrestart.com";
+        const AI_TIMEOUT_MESSAGE = "Taking too long to respond. Try again or email hello@cyberrestart.com";
 
         // POST to the AI function with a 15s client-side timeout. Rejects with
         // an AbortError on timeout so callers can show AI_TIMEOUT_MESSAGE.
