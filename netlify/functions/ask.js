@@ -225,7 +225,7 @@ YOUR JOB
       },
       body: JSON.stringify({
         model: "openai/gpt-oss-120b",
-        max_tokens: 300,
+        max_tokens: 450,
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
           ...conversationHistory
