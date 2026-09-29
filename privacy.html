@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Privacy Policy — CyberRestart</title>
+    <meta name="description" content="How CyberRestart collects, uses, and protects personal data submitted through cyberrestart.com." />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%231a3a5c'/><line x1='6' y1='7' x2='20' y2='7' stroke='%232e6b8a' stroke-width='2.5' stroke-linecap='round'/><text x='5' y='26' font-family='Arial Black,sans-serif' font-weight='900' font-size='22' fill='white'>C</text></svg>">
+    <link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet" />
+    <style>
+        /* Same palette and type as index.html (Tailwind slate/cyan values) */
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            background: #f1f5f9;
+            color: #0b1629;
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        a {
+            color: #0891b2;
+        }
+        a:hover {
+            color: #0e7490;
+        }
+
+        /* ── header (matches index.html nav) ── */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+        header nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        header img {
+            height: 40px;
+            width: auto;
+            display: block;
+        }
+        .nav-cta {
+            background: #0f172a;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 10px 24px;
+            border-radius: 9999px;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+        .nav-cta:hover {
+            background: #0891b2;
+            color: #fff;
+        }
+
+        /* ── content ── */
+        main {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 48px 24px 80px;
+        }
+        .back-link {
+            display: inline-block;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            margin-bottom: 32px;
+        }
+        .back-link.bottom {
+            margin: 40px 0 0;
+        }
+        .eyebrow {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #0891b2;
+            margin: 0 0 12px;
+        }
+        h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 40px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            line-height: 1.15;
+            color: #0f172a;
+            margin: 0 0 12px;
+        }
+        .updated {
+            font-size: 14px;
+            color: #64748b;
+            margin: 0 0 40px;
+        }
+        .policy {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 0 30px rgba(6, 182, 212, 0.12);
+        }
+        section + section {
+            margin-top: 36px;
+            padding-top: 36px;
+            border-top: 1px solid #f1f5f9;
+        }
+        h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: #0891b2;
+            margin: 0 0 14px;
+        }
+        p,
+        li {
+            font-size: 16px;
+            line-height: 1.75;
+            color: #475569;
+        }
+        p {
+            margin: 0 0 14px;
+        }
+        p:last-child {
+            margin-bottom: 0;
+        }
+        ul {
+            margin: 0 0 14px;
+            padding-left: 22px;
+        }
+        ul:last-child {
+            margin-bottom: 0;
+        }
+        li + li {
+            margin-top: 6px;
+        }
+        strong {
+            color: #1e293b;
+            font-weight: 600;
+        }
+
+        footer {
+            background: #040811;
+            border-top: 1px solid rgba(30, 41, 59, 0.6);
+            padding: 32px 24px;
+            text-align: center;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #64748b;
+        }
+
+        @media (max-width: 640px) {
+            header nav {
+                padding: 0 16px;
+                height: 64px;
+            }
+            header img {
+                height: 32px;
+            }
+            .nav-cta {
+                display: none;
+            }
+            main {
+                padding: 32px 16px 64px;
+            }
+            h1 {
+                font-size: 32px;
+            }
+            .policy {
+                padding: 24px 20px;
+                border-radius: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <nav>
+            <a href="/"><img src="assets/images/cyberrestartlogolightversion3.png" alt="CyberRestart" /></a>
+            <a href="/#contact" class="nav-cta">Talk to a lead consultant</a>
+        </nav>
+    </header>
+
+    <main>
+        <a href="/" class="back-link">← Back to home</a>
+
+        <p class="eyebrow">Legal</p>
+        <h1>Privacy Policy</h1>
+        <p class="updated">Last updated: September 2026</p>
+
+        <div class="policy">
+            <section>
+                <h2>1. Who We Are</h2>
+                <p>CyberRestart is a digital resilience firm operating across Nigeria, Pan-Africa, and the GCC.</p>
+                <p>Contact: <a href="mailto:hello@cyberrestart.com">hello@cyberrestart.com</a></p>
+            </section>
+
+            <section>
+                <h2>2. What Data We Collect</h2>
+                <ul>
+                    <li><strong>Name, email, company name:</strong> submitted via contact forms</li>
+                    <li><strong>Domain name:</strong> submitted via free scan request form</li>
+                    <li><strong>Chat messages:</strong> entered into the AI chat widget</li>
+                    <li><strong>IP address and browser data:</strong> collected automatically by Netlify's infrastructure</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>3. Why We Collect It</h2>
+                <ul>
+                    <li>To respond to service enquiries</li>
+                    <li>To deliver requested assessments and reports</li>
+                    <li>To improve our services</li>
+                </ul>
+                <p>We do not sell, rent, or share your data with third parties for marketing purposes.</p>
+            </section>
+
+            <section>
+                <h2>4. Third-Party Processors</h2>
+                <ul>
+                    <li><strong>Netlify</strong> (<a href="https://www.netlify.com" rel="noopener">netlify.com</a>): hosts this website and processes form submissions</li>
+                    <li><strong>Groq</strong> (<a href="https://groq.com" rel="noopener">groq.com</a>): processes AI chat messages to generate responses. Messages sent to the chat widget are transmitted to Groq's API. Do not share sensitive personal or confidential information in the chat.</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>5. Cookies and Tracking</h2>
+                <p>This website loads fonts from Google Fonts (fonts.googleapis.com), which may set cookies and transmit your IP address to Google's servers.</p>
+                <p>No advertising trackers, analytics platforms, or social media pixels are used on this site.</p>
+            </section>
+
+            <section>
+                <h2>6. Data Retention</h2>
+                <p>Form submissions are retained for 12 months or until you request deletion.</p>
+                <p>Chat messages are not stored by CyberRestart beyond the active session.</p>
+            </section>
+
+            <section>
+                <h2>7. Your Rights (NDPA 2023)</h2>
+                <p>You have the right to:</p>
+                <ul>
+                    <li>Access the personal data we hold about you</li>
+                    <li>Request correction of inaccurate data</li>
+                    <li>Request deletion of your data</li>
+                    <li>Withdraw consent at any time</li>
+                </ul>
+                <p>To exercise any of these rights, email <a href="mailto:hello@cyberrestart.com">hello@cyberrestart.com</a>.</p>
+            </section>
+
+            <section>
+                <h2>8. Changes to This Policy</h2>
+                <p>We may update this policy. The current version is always available at <a href="/privacy">cyberrestart.com/privacy</a>.</p>
+                <p>Last updated: September 2026.</p>
+            </section>
+        </div>
+
+        <a href="/" class="back-link bottom">← Back to home</a>
+    </main>
+
+    <footer>© 2026 Digital Resilience — Africa &amp; the GCC</footer>
+
+</body>
+</html>

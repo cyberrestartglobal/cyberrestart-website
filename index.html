@@ -1260,6 +1260,7 @@
                 <img src="assets/images/CyberRestartLogoWithoutSlogan.png" alt="CyberRestart" class="h-8 w-auto" />
             </div>
             <div class="font-mono text-xs text-slate-500 uppercase tracking-widest text-center md:text-right">© 2026 DIGITAL RESILIENCE — AFRICA &amp; THE GCC</div>
+            <a href="/privacy" style="color: #64748b; font-size: 12px; text-decoration: none;">Privacy Policy</a>
         </div>
     </footer>
 
@@ -1276,7 +1277,16 @@
             <div id="chat-messages" class="flex-1 p-4 overflow-y-auto flex flex-col gap-4 bg-slate-50/50">
                 <div class="chat-bubble self-start bg-slate-100 text-slate-800 p-3 rounded-2xl rounded-tl-sm text-sm border border-slate-200 max-w-[85%]">Hello! I'm the CyberRestart AI assistant. Do you have a question about our services, or would you like to escalate an issue to a lead consultant?</div>
             </div>
-            <div class="p-3 bg-white border-t border-slate-200 flex items-center gap-2 shrink-0">
+            <div id="chat-consent-panel" class="hidden p-4 bg-white border-t border-slate-200 shrink-0">
+                <p style="font-size:13px; color: #475569; line-height:1.6; margin-bottom:16px;">
+                    This chat is powered by AI. Messages you send are processed by Groq to generate responses. Do not share confidential or sensitive information.
+                    <a href="/privacy" style="color: #0891b2;">Privacy Policy</a>
+                </p>
+                <button id="chat-consent-btn" style="width:100%; background: #0891b2; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 13px;">
+                    I understand — start chatting
+                </button>
+            </div>
+            <div id="chat-input-row" class="p-3 bg-white border-t border-slate-200 flex items-center gap-2 shrink-0">
                 <input type="text" id="chat-input" maxlength="1000" placeholder="Type your message..." class="flex-1 bg-slate-100 border-none rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500" onkeypress="handleChatEnter(event)">
                 <button id="chat-send-btn" onclick="sendChatMessage()" class="bg-cyan-600 text-white p-2 rounded-full hover:bg-cyan-700 transition-colors"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>
             </div>
@@ -2108,6 +2118,34 @@
             }
         }
 
+        // ── First-use AI chat consent ──
+        // localStorage can throw (private mode, blocked storage); fall back to
+        // an in-memory flag so consent still holds for this page visit.
+        let chatConsentGiven = false;
+
+        function hasChatConsent() {
+            if (chatConsentGiven) return true;
+            try {
+                return localStorage.getItem('cr_chat_consent') !== null;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        function showChatInput() {
+            document.getElementById('chat-consent-panel').classList.add('hidden');
+            document.getElementById('chat-input-row').classList.remove('hidden');
+            document.getElementById('chat-input').focus();
+        }
+
+        document.getElementById('chat-consent-btn').addEventListener('click', () => {
+            chatConsentGiven = true;
+            try {
+                localStorage.setItem('cr_chat_consent', '1');
+            } catch (e) {}
+            showChatInput();
+        });
+
         function toggleChat() {
             const widget = document.getElementById('ai-chat-widget');
             const bubble = document.getElementById('ai-bubble');
@@ -2117,7 +2155,12 @@
             if (chatOpen) {
                 widget.classList.remove('closed');
                 bubble.style.display = 'none';
-                document.getElementById('chat-input').focus();
+                if (hasChatConsent()) {
+                    showChatInput();
+                } else {
+                    document.getElementById('chat-input-row').classList.add('hidden');
+                    document.getElementById('chat-consent-panel').classList.remove('hidden');
+                }
             } else {
                 widget.classList.add('closed');
                 bubble.style.display = 'flex';
