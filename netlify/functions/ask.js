@@ -19,7 +19,7 @@
 const ALLOWED_ORIGINS = [
   "https://cyberrestart.com",
   "https://www.cyberrestart.com",
-  "https://courageous-gumdrop-2d4afa.netlify.app" // remove once the real domain is live
+  "https://chic-crumble-008e20.netlify.app"
 ];
 
 const MAX_MESSAGE_LENGTH = 1000; // characters — plenty for a real question, not for abuse
