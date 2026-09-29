@@ -1,0 +1,2175 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CyberRestart — Digital Resilience System</title>
+    <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/images/favicon-16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/images/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet" />
+    <script src="https://d3js.org/d3.v7.min.js">
+    </script>
+    <script src="https://unpkg.com/topojson-client@3">
+    </script>
+    <script src="https://cdn.tailwindcss.com">
+    </script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif'],
+                        mono: ['IBM Plex Mono', 'monospace'],
+                    },
+                    colors: {
+                        slate: { 850: '#0b1629', 900: '#070e1a', 950: '#040811' },
+                        cyan: { 400: '#2dd4e8', 500: '#06b6d4', 600: '#0891b2', 700: '#0e7490' },
+                    },
+                    boxShadow: {
+                        glow: '0 0 30px rgba(6,182,212,0.12)',
+                        'glow-lg': '0 0 50px rgba(6,182,212,0.20)',
+                        'glass': '0 8px 32px rgba(0,0,0,0.08)',
+                    },
+                },
+            },
+        };
+    </script>
+    <style>
+        /* ── reset & base ── */
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            background: #f1f5f9;
+            color: #0b1629;
+            overflow-x: hidden;
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── backgrounds ── */
+        .bg-grid {
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            background-size: 44px 44px;
+            background-image: linear-gradient(to right, rgba(11, 22, 41, 0.035) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(11, 22, 41, 0.035) 1px, transparent 1px);
+            mask-image: linear-gradient(to bottom, white 15%, transparent 88%);
+            -webkit-mask-image: linear-gradient(to bottom, white 15%, transparent 88%);
+        }
+        .bg-glow {
+            position: fixed;
+            top: -25%;
+            left: -10%;
+            width: 80vw;
+            height: 80vw;
+            background: radial-gradient(circle, rgba(6, 182, 212, 0.06) 0%, transparent 72%);
+            z-index: -1;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .bg-glow-2 {
+            position: fixed;
+            bottom: -30%;
+            right: -15%;
+            width: 70vw;
+            height: 70vw;
+            background: radial-gradient(circle, rgba(30, 58, 138, 0.045) 0%, transparent 72%);
+            z-index: -1;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .bg-glow-3 {
+            position: fixed;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120vw;
+            height: 60vw;
+            background: radial-gradient(ellipse, rgba(6, 182, 212, 0.02) 0%, transparent 70%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* ── reveal animations ── */
+        .reveal {
+            opacity: 0;
+            transform: translateY(32px);
+            transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .reveal-left {
+            opacity: 0;
+            transform: translateX(-32px);
+            transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal-left.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        .reveal-right {
+            opacity: 0;
+            transform: translateX(32px);
+            transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal-right.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        .delay-100 {
+            transition-delay: 80ms;
+        }
+        .delay-200 {
+            transition-delay: 160ms;
+        }
+        .delay-300 {
+            transition-delay: 240ms;
+        }
+        .delay-400 {
+            transition-delay: 320ms;
+        }
+
+        /* ── header fade ── */
+        .fade-up-intro {
+            animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+        @keyframes fadeUp {
+            0% {
+                opacity: 0;
+                transform: translateY(24px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ── env wheel ── */
+        .env-wheel {
+            transform-origin: 260px 260px;
+            animation: rotateSlowly 90s linear infinite;
+        }
+        .env-wheel:hover {
+            animation-play-state: paused;
+        }
+        @keyframes rotateSlowly {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .env-domain {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .env-domain .r1 path {
+            fill: #0b1629;
+            stroke: #f1f5f9;
+            stroke-width: 3px;
+            transition: all 0.35s ease;
+        }
+        .env-domain .r2 path {
+            fill: #1e293b;
+            stroke: #f1f5f9;
+            stroke-width: 3px;
+            transition: all 0.35s ease;
+        }
+        .env-domain .r3 path {
+            fill: transparent;
+            stroke: #cbd5e1;
+            stroke-width: 2px;
+            stroke-dasharray: 4 4;
+            transition: all 0.35s ease;
+        }
+        .env-domain .r3 text {
+            fill: #475569;
+            font-weight: 700;
+        }
+        .env-domain text {
+            fill: #fff;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            pointer-events: none;
+            transition: fill 0.3s;
+        }
+
+        .env-domain:hover .r1 path,
+        .env-domain.active .r1 path {
+            fill: #06b6d4;
+        }
+        .env-domain:hover .r2 path,
+        .env-domain.active .r2 path {
+            fill: #0e7490;
+        }
+        .env-domain:hover .r3 path,
+        .env-domain.active .r3 path {
+            stroke: #06b6d4;
+            fill: rgba(6, 182, 212, 0.06);
+            stroke-dasharray: none;
+        }
+        .env-domain:hover .r3 text,
+        .env-domain.active .r3 text {
+            fill: #0891b2;
+        }
+
+        /* ── marquee ── */
+        .marquee-wrapper {
+            display: flex;
+            overflow: hidden;
+            user-select: none;
+            mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+            -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+        }
+        .marquee-content {
+            display: flex;
+            flex-shrink: 0;
+            justify-content: space-around;
+            gap: 1.5rem;
+            min-width: 100%;
+            animation: scrollX 45s linear infinite;
+        }
+        .marquee-content.reverse {
+            animation-direction: reverse;
+            animation-duration: 50s;
+        }
+        .marquee-wrapper:hover .marquee-content {
+            animation-play-state: paused;
+        }
+        @keyframes scrollX {
+            from {
+                transform: translateX(0);
+            }
+            to {
+                transform: translateX(-100%);
+            }
+        }
+
+        .cert-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.4rem 1.2rem;
+            background: #ffffff;
+            border: 1px solid #e9edf2;
+            border-radius: 2rem;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: #1e293b;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+            white-space: nowrap;
+            transition: all 0.3s;
+            height: 2.4rem;
+        }
+        .cert-badge:hover {
+            border-color: #06b6d4;
+            color: #0891b2;
+            box-shadow: 0 6px 14px rgba(6, 182, 212, 0.10);
+            transform: translateY(-2px);
+        }
+        .cert-badge .logo-svg {
+            height: 1.4rem;
+            width: auto;
+            flex-shrink: 0;
+        }
+        .cert-badge .partner-logo {
+            height: 1.4rem;
+            width: auto;
+            flex-shrink: 0;
+        }
+
+        /* ── sliders with dynamic tooltip ── */
+        .slider-container {
+            position: relative;
+            margin-bottom: 0.75rem;
+        }
+        .slider-container .slider-tooltip {
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0b1629;
+            color: #e2e8f0;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            border: 1px solid #334155;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            z-index: 20;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            max-width: 280px;
+            white-space: normal;
+            line-height: 1.4;
+            text-align: left;
+        }
+        .slider-container .slider-tooltip.visible {
+            opacity: 1;
+        }
+        .slider-container:hover .slider-tooltip {
+            opacity: 0;
+        }
+        .slider-container .slider-tooltip.visible {
+            opacity: 1 !important;
+        }
+
+        .slider-numbers {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: #94a3b8;
+            margin-top: 0.2rem;
+            padding: 0 0.2rem;
+        }
+        .slider-numbers span {
+            cursor: pointer;
+            transition: color 0.2s, background 0.2s;
+            padding: 0.1rem 0.3rem;
+            border-radius: 4px;
+        }
+        .slider-numbers span:hover {
+            color: #2dd4e8;
+            background: rgba(6,182,212,0.12);
+        }
+        .slider-numbers span.active {
+            color: white;
+            font-weight: 700;
+            background: rgba(6,182,212,0.2);
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 18px;
+            width: 18px;
+            border-radius: 50%;
+            background: #06b6d4;
+            cursor: pointer;
+            margin-top: -7px;
+            box-shadow: 0 0 12px rgba(6, 182, 212, 0.45);
+            transition: 0.15s;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.12);
+        }
+        input[type="range"]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+        }
+        input[type="range"]::-moz-range-track {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+            border: none;
+        }
+        input[type="range"]::-moz-range-thumb {
+            height: 18px;
+            width: 18px;
+            border-radius: 50%;
+            background: #06b6d4;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 0 12px rgba(6, 182, 212, 0.45);
+        }
+
+        /* ── map ── */
+        .country-path {
+            transition: fill 0.3s ease, stroke-width 0.3s ease, stroke 0.3s ease;
+            cursor: pointer;
+        }
+        .country-path:hover {
+            fill: #64748b !important;
+        }
+        .country-path.active {
+            fill: #06b6d4 !important;
+            stroke: #2dd4e8;
+            stroke-width: 1.8;
+        }
+        .ping-circle {
+            transform-origin: center;
+            transform-box: fill-box;
+            animation: pingMap 2.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+            fill: none;
+            stroke: #06b6d4;
+            stroke-width: 1.5px;
+            pointer-events: none;
+        }
+        @keyframes pingMap {
+            0% {
+                transform: scale(0.8);
+                opacity: 0.9;
+            }
+            100% {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        /* ── crossfade ── */
+        .crossfade {
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        /* ── chat widget ── */
+        #ai-chat-widget {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-origin: bottom right;
+        }
+        #ai-chat-widget.closed {
+            opacity: 0;
+            transform: scale(0.85) translateY(16px);
+            pointer-events: none;
+        }
+        .chat-bubble {
+            animation: popIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes popIn {
+            0% {
+                opacity: 0;
+                transform: translateY(10px) scale(0.96);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes bob {
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+        .animate-bob {
+            animation: bob 3.2s ease-in-out infinite;
+        }
+
+        /* ── roadmap cards ── */
+        .roadmap-step {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(4px);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            text-align: left;
+            padding: 1.5rem;
+            border-radius: 1rem;
+        }
+        .roadmap-step:hover {
+            background: rgba(6, 182, 212, 0.08);
+            border-color: rgba(6, 182, 212, 0.25);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+        }
+        .roadmap-step .step-num {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #06b6d4;
+            letter-spacing: 0.05em;
+        }
+        .roadmap-step h4 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            color: white;
+            font-size: 1.1rem;
+            margin-top: 0.25rem;
+            margin-bottom: 0.5rem;
+        }
+        .roadmap-step p {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        .roadmap-step ul {
+            margin-top: 0.75rem;
+            list-style: disc;
+            padding-left: 1.25rem;
+            color: #cbd5e1;
+            font-size: 0.85rem;
+        }
+        .roadmap-step ul li {
+            margin-bottom: 0.25rem;
+        }
+
+        /* ── field notes cards ── */
+        .note-card {
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .note-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
+        }
+
+        /* ── framework badges (regulatory landscape) ── */
+        .framework-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: #1e293b;
+            padding: 0.25rem 0.7rem;
+            border-radius: 2rem;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #cbd5e1;
+            border: 1px solid #334155;
+            margin: 0.15rem 0.15rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .framework-badge .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .framework-badge .status-dot.active {
+            background: #22c55e;
+        }
+        .framework-badge .status-dot.pending {
+            background: #eab308;
+        }
+        .framework-badge .status-dot.deadline-pending {
+            background: #f59e0b;
+        }
+        .framework-badge .status-dot.deadline-passed {
+            background: #ef4444;
+        }
+        .framework-badge:hover {
+            background: #0f172a;
+            border-color: #06b6d4;
+        }
+
+        /* Global tooltip for framework badges (fixed position) */
+        .global-tooltip {
+            position: fixed;
+            z-index: 9999;
+            background: #0b1629;
+            color: #e2e8f0;
+            padding: 0.6rem 0.9rem;
+            border-radius: 0.5rem;
+            border: 1px solid #334155;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.6);
+            font-size: 0.7rem;
+            line-height: 1.4;
+            max-width: 240px;
+            pointer-events: none;
+            backdrop-filter: blur(4px);
+            opacity: 0;
+            transition: opacity 0.15s;
+        }
+        .global-tooltip.visible {
+            opacity: 1;
+        }
+        .global-tooltip .deadline-text {
+            color: #f87171;
+            font-weight: 600;
+            display: block;
+            margin-top: 0.2rem;
+        }
+        .global-tooltip .deadline-ok {
+            color: #34d399;
+        }
+
+        /* ── responsive tweaks ── */
+        @media (max-width: 768px) {
+            .env-wheel {
+                transform-origin: 50% 50%;
+            }
+        }
+        .law-item {
+            border-left: 2px solid #06b6d4;
+            padding-left: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+        .law-item .label {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .law-item .value {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #e2e8f0;
+            line-height: 1.4;
+        }
+        .legend-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            padding-top: 0.5rem;
+            margin-top: 0.5rem;
+            border-top: 1px solid #334155;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.65rem;
+            color: #94a3b8;
+        }
+        .legend-item .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+        }
+        .legend-item .dot.active { background: #22c55e; }
+        .legend-item .dot.pending { background: #eab308; }
+        .legend-item .dot.deadline-pending { background: #f59e0b; }
+        .legend-item .dot.deadline-passed { background: #ef4444; }
+
+        .ai-hero-input {
+            background: white;
+            border-radius: 3rem;
+            border: 1px solid #e2e8f0;
+            padding: 0.3rem 0.3rem 0.3rem 1.5rem;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+            transition: all 0.3s;
+            max-width: 600px;
+        }
+        .ai-hero-input:focus-within {
+            border-color: #06b6d4;
+            box-shadow: 0 4px 30px rgba(6,182,212,0.15);
+        }
+        .ai-hero-input input {
+            border: none;
+            outline: none;
+            flex: 1;
+            padding: 0.8rem 0;
+            font-size: 0.95rem;
+            background: transparent;
+            color: #0b1629;
+            min-width: 0;
+        }
+        .ai-hero-input input::placeholder {
+            color: #94a3b8;
+            font-style: italic;
+        }
+        .ai-hero-input button {
+            background: #0b1629;
+            color: white;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+        .ai-hero-input button:hover {
+            background: #06b6d4;
+        }
+
+        .client-logo {
+            display: inline-block;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
+            padding: 0.3rem 1rem;
+            border-radius: 2rem;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            color: #334155;
+            transition: all 0.3s;
+        }
+        .client-logo:hover {
+            border-color: #06b6d4;
+            color: #0891b2;
+            transform: translateY(-2px);
+        }
+        /* For when real client logo files are dropped in, replacing the text wordmark chips */
+        .client-logo-img {
+            display: inline-block;
+            height: 1.6rem;
+            width: auto;
+            object-fit: contain;
+            filter: grayscale(1) opacity(0.6);
+            transition: filter 0.3s;
+        }
+        .client-logo-img:hover {
+            filter: grayscale(0) opacity(1);
+        }
+
+        .highlight-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #0b1629;
+            color: white;
+            padding: 0.4rem 1rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            font-size: 0.75rem;
+            letter-spacing: 0.02em;
+        }
+        .highlight-badge .icon {
+            font-size: 1rem;
+        }
+
+        /* ensure tooltip container doesn't clip */
+        #map-info-panel {
+            overflow: visible !important;
+        }
+        #map-info-panel .flex.flex-wrap {
+            overflow: visible !important;
+        }
+
+        /* ── certification & partner logo styles ── */
+        .cert-badge .logo-svg {
+            height: 1.4rem;
+            width: auto;
+            flex-shrink: 0;
+        }
+        .cert-badge .partner-logo {
+            height: 1.4rem;
+            width: auto;
+            flex-shrink: 0;
+        }
+        /* adjust for certification badges with only text */
+        .cert-badge.cert-text {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            font-weight: 700;
+            color: #0b1629;
+            padding: 0.4rem 1rem;
+        }
+        .cert-badge.cert-text:hover {
+            background: #e2e8f0;
+            border-color: #06b6d4;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- backgrounds -->
+    <div class="bg-grid"></div>
+    <div class="bg-glow"></div>
+    <div class="bg-glow-2"></div>
+    <div class="bg-glow-3"></div>
+
+    <!-- ─── HEADER ─── -->
+    <header class="sticky top-0 z-50 bg-white/70 backdrop-blur-xl border-b border-slate-200/60 shadow-sm transition-all fade-up-intro">
+        <nav class="max-w-[1200px] mx-auto px-6 h-20 flex items-center justify-between">
+            <a href="#" class="flex items-center group">
+                <img src="assets/images/cyberrestartlogolightversion3.png" alt="CyberRestart" class="h-10 object-contain group-hover:opacity-75 transition-opacity" />
+            </a>
+            <div class="hidden md:flex items-center gap-8 font-sans font-medium text-sm text-slate-600">
+                <a href="#env" class="hover:text-cyan-600 transition-colors">Environment</a>
+                <a href="#map" class="hover:text-cyan-600 transition-colors">Compliance map</a>
+                <a href="#assess" class="hover:text-cyan-600 transition-colors">Self-assess</a>
+                <a href="#trust" class="hover:text-cyan-600 transition-colors">Why us</a>
+            </div>
+            <a href="#contact" class="hidden md:inline-flex bg-slate-900 hover:bg-cyan-600 text-white font-medium text-sm px-6 py-2.5 rounded-full transition-all shadow-md hover:shadow-lg">
+                Talk to a lead consultant
+            </a>
+            <button id="mobile-menu-btn" type="button" class="md:hidden p-2 -mr-2 text-slate-700 hover:text-cyan-600 transition-colors" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </button>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden absolute left-0 right-0 top-full bg-slate-900 border-t border-slate-800 shadow-xl">
+            <div class="px-6 py-4 flex flex-col font-sans font-medium text-sm">
+                <a href="#env" class="py-3 text-slate-300 hover:text-cyan-400 transition-colors">Environment</a>
+                <a href="#map" class="py-3 text-slate-300 hover:text-cyan-400 transition-colors">Compliance map</a>
+                <a href="#assess" class="py-3 text-slate-300 hover:text-cyan-400 transition-colors">Self-assess</a>
+                <a href="#trust" class="py-3 text-slate-300 hover:text-cyan-400 transition-colors">Why us</a>
+                <a href="#contact" class="mt-2 text-center bg-cyan-600 hover:bg-cyan-500 text-white px-6 py-3 rounded-full transition-colors">Talk to a lead consultant</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- ─── HERO ─── -->
+    <section class="pt-24 pb-16 overflow-hidden">
+        <div class="max-w-[1200px] mx-auto px-6">
+            <div class="flex flex-col md:flex-row items-center gap-4 mb-6 fade-up-intro delay-100">
+                <div class="flex items-center gap-3 text-cyan-600 font-mono text-sm font-semibold tracking-widest uppercase">
+                    <span class="w-8 h-[2px] bg-cyan-500 rounded-full"></span>
+                    Digital Resilience — Africa &amp; The Gulf
+                </div>
+                <div class="hidden md:block px-4 py-1.5 bg-slate-100 text-slate-700 rounded-full text-xs font-mono border border-slate-200 shadow-inner">
+                    Client focus: <span id="typewriter" class="text-cyan-600 font-bold cursor"></span>
+                </div>
+            </div>
+
+            <h1 class="font-display text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.08] text-slate-900 max-w-4xl tracking-tight mb-6 fade-up-intro delay-200">
+                You're not managing four vendors.
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-700">You're managing one system.</span>
+            </h1>
+            <p class="text-lg md:text-xl text-slate-600 max-w-3xl leading-relaxed mb-8 fade-up-intro delay-300">
+                Cloud, DevOps, security testing, compliance, and implementation — most organizations stitch these together across four vendors.
+                CyberRestart runs it as one resilience stack, end to end.
+            </p>
+
+            <!-- AI Hero Input -->
+            <div class="fade-up-intro delay-400 max-w-2xl">
+                <div class="ai-hero-input">
+                    <input type="text" id="hero-ai-input" maxlength="1000" placeholder="Ask our CyberAI anything — questions, challenges, or your current security posture." />
+                    <button id="hero-ai-btn" onclick="handleHeroAI()">Ask</button>
+                </div>
+                <div id="hero-ai-response" class="mt-3 text-sm text-slate-600 min-h-[1.5rem]"></div>
+            </div>
+
+            <!-- Diagnostic Card -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-glow border border-slate-200/70 p-8 reveal delay-200 max-w-5xl mt-10">
+                <div class="font-semibold text-slate-900 mb-6">Select your current operational priority:</div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                    <button class="diag-opt flex flex-col items-center justify-center gap-3 w-full p-4 rounded-2xl border-2 border-cyan-500 bg-cyan-50/70 text-cyan-800 font-semibold transition-all shadow-sm h-32" data-case="cloud">
+                        <svg class="w-8 h-8 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
+                        <span class="text-center text-sm">Moving to the cloud</span>
+                    </button>
+                    <button class="diag-opt flex flex-col items-center justify-center gap-3 w-full p-4 rounded-2xl border-2 border-slate-200 bg-white text-slate-500 font-medium hover:border-slate-300 hover:bg-slate-50 transition-all h-32" data-case="audit">
+                        <svg class="w-8 h-8 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                        <span class="text-center text-sm">Facing an audit deadline</span>
+                    </button>
+                    <button class="diag-opt flex flex-col items-center justify-center gap-3 w-full p-4 rounded-2xl border-2 border-slate-200 bg-white text-slate-500 font-medium hover:border-slate-300 hover:bg-slate-50 transition-all h-32" data-case="exposed">
+                        <svg class="w-8 h-8 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        <span class="text-center text-sm">Think we've been exposed</span>
+                    </button>
+                    <button class="diag-opt flex flex-col items-center justify-center gap-3 w-full p-4 rounded-2xl border-2 border-slate-200 bg-white text-slate-500 font-medium hover:border-slate-300 hover:bg-slate-50 transition-all h-32" data-case="scaling">
+                        <svg class="w-8 h-8 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                        <span class="text-center text-sm">Scaling engineering</span>
+                    </button>
+                </div>
+                <div class="pt-6 border-t border-slate-100/70 flex flex-col md:flex-row gap-8 justify-between items-start md:items-center">
+                    <div>
+                        <span id="diag-tag" class="font-mono text-xs font-bold text-cyan-600 tracking-wider uppercase block mb-2">BUILD LAYER</span>
+                        <h4 id="diag-title" class="font-display text-2xl font-bold text-slate-900 mb-2">Cloud architecture &amp; DevOps</h4>
+                        <p id="diag-desc" class="text-slate-600 max-w-2xl leading-relaxed">We design and stand up secure cloud environments and CI/CD pipelines — security built into the architecture, not bolted on after launch.</p>
+                    </div>
+                    <a href="#contact" class="shrink-0 bg-slate-900 text-white hover:bg-cyan-600 px-6 py-3 rounded-full font-medium transition-colors shadow-md whitespace-nowrap">
+                        Solve this problem
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ─── MARQUEE: CERTIFICATIONS & PARTNERS (with accurate logos) ─── -->
+    <section class="py-10 bg-white/90 border-y border-slate-200/70 reveal delay-100 overflow-hidden">
+        <div class="max-w-[1200px] mx-auto px-6 mb-6">
+            <div class="text-xs font-bold text-slate-400 uppercase tracking-widest text-center">Certified Experts &amp; Technology Partners</div>
+        </div>
+
+        <!-- Track 1: Certifications (text badges with color accents) -->
+        <div class="marquee-wrapper mb-4">
+            <div class="marquee-content">
+                <span class="cert-badge cert-text" style="border-left: 4px solid #0033a0;">CISSP</span>
+                <span class="cert-badge cert-text" style="border-left: 4px solid #f48024;">CEH</span>
+                <span class="cert-badge cert-text" style="border-left: 4px solid #0077b6;">CHFI</span>
+                <span class="cert-badge cert-text" style="border-left: 4px solid #4285F4;">GCP Architect</span>
+                <span class="cert-badge cert-text" style="border-left: 4px solid #34A853;">GCP Security</span>
+                <span class="cert-badge cert-text" style="border-left: 4px solid #0078D4;">Azure Architect</span>
+                <span class="cert-badge cert-text" style="border-left: 4px solid #0078D4;">Azure Security</span>
+                <span class="cert-badge cert-text" style="border-left: 4px solid #FF9900;">AWS Architect</span>
+                <span class="cert-badge cert-text" style="border-left: 4px solid #FF9900;">AWS Security</span>
+                <span class="cert-badge cert-text" style="border-left: 4px solid #6a1b9a;">CDPO</span>
+                <span class="cert-badge cert-text" style="border-left: 4px solid #e31b23;">ISO Certified</span>
+            </div>
+            <div class="marquee-content">
+                <!-- duplicate for seamless loop -->
+                <span class="cert-badge cert-text" style="border-left: 4px solid #0033a0;">CISSP</span>
+                <span class="cert-badge cert-text" style="border-left: 4px solid #f48024;">CEH</span>
+                <span class="cert-badge cert-text" style="border-left: 4px solid #0077b6;">CHFI</span>
+                <span class="cert-badge cert-text" style="border-left: 4px solid #4285F4;">GCP Architect</span>
+                <span class="cert-badge cert-text" style="border-left: 4px solid #34A853;">GCP Security</span>
+                <span class="cert-badge cert-text" style="border-left: 4px solid #0078D4;">Azure Architect</span>
+                <span class="cert-badge cert-text" style="border-left: 4px solid #0078D4;">Azure Security</span>
+                <span class="cert-badge cert-text" style="border-left: 4px solid #FF9900;">AWS Architect</span>
+                <span class="cert-badge cert-text" style="border-left: 4px solid #FF9900;">AWS Security</span>
+                <span class="cert-badge cert-text" style="border-left: 4px solid #6a1b9a;">CDPO</span>
+                <span class="cert-badge cert-text" style="border-left: 4px solid #e31b23;">ISO Certified</span>
+            </div>
+        </div>
+
+        <!-- Track 2: Technology Partners — accurate marks where the brand's icon library
+             permits redistribution; text wordmark badges for AWS/Azure/ServiceNow/JumpCloud,
+             whose trademark guidelines restrict third-party reproduction of their logo marks. -->
+        <div class="marquee-wrapper">
+            <div class="marquee-content reverse">
+                <!-- Google Cloud (official mark, simple-icons MIT-licensed set) -->
+                <span class="cert-badge" style="border-left-color:#4285F4;">
+                    <svg class="partner-logo" viewBox="0 0 24 24" fill="#4285F4"><path d="M12.19 2.38a9.344 9.344 0 0 0-9.234 6.893c.053-.02-.055.013 0 0-3.875 2.551-3.922 8.11-.247 10.941l.006-.007-.007.03a6.717 6.717 0 0 0 4.077 1.356h5.173l.03.03h5.192c6.687.053 9.376-8.605 3.835-12.35a9.365 9.365 0 0 0-2.821-4.552l-.043.043.006-.05A9.344 9.344 0 0 0 12.19 2.38zm-.358 4.146c1.244-.04 2.518.368 3.486 1.15a5.186 5.186 0 0 1 1.862 4.078v.518c3.53-.07 3.53 5.262 0 5.193h-5.193l-.008.009v-.04H6.785a2.59 2.59 0 0 1-1.067-.23h.001a2.597 2.597 0 1 1 3.437-3.437l3.013-3.012A6.747 6.747 0 0 0 8.11 8.24c.018-.01.04-.026.054-.023a5.186 5.186 0 0 1 3.67-1.69z"/></svg>
+                    Google Cloud
+                </span>
+                <!-- AWS (wordmark only — AWS restricts third-party redistribution of its logo mark) -->
+                <span class="cert-badge cert-text" style="border-left-color:#FF9900;">AWS</span>
+                <!-- Microsoft Azure (wordmark only — Microsoft restricts third-party redistribution of its logo mark) -->
+                <span class="cert-badge cert-text" style="border-left-color:#0078D4;">Azure</span>
+                <!-- ServiceNow (wordmark only — trademark guidelines restrict logo redistribution) -->
+                <span class="cert-badge cert-text" style="border-left-color:#81b5a1;">ServiceNow</span>
+                <!-- GitHub (official mark, simple-icons MIT-licensed set) -->
+                <span class="cert-badge" style="border-left-color:#181717;">
+                    <svg class="partner-logo" viewBox="0 0 24 24" fill="#181717"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+                    GitHub
+                </span>
+                <!-- SonarQube (official mark, simple-icons MIT-licensed set) -->
+                <span class="cert-badge" style="border-left-color:#126ED3;">
+                    <svg class="partner-logo" viewBox="0 0 24 24" fill="#126ED3"><path d="M12 0a.774.774 0 0 0-.775.775c0 .43.346.776.775.776 5.762 0 10.45 4.687 10.45 10.449 0 .43.345.775.775.775A.774.774 0 0 0 24 12c0-6.616-5.384-12-12-12zm0 3.932a.774.774 0 0 0-.775.775c0 .43.346.775.775.775A6.524 6.524 0 0 1 18.518 12c0 .43.346.775.775.775.43 0 .775-.346.775-.775 0-4.448-3.62-8.068-8.068-8.068zm0 3.925a.774.774 0 0 0-.775.776c0 .43.346.775.775.775A2.597 2.597 0 0 1 14.592 12c0 .43.346.775.775.775.43 0 .776-.346.776-.775A4.145 4.145 0 0 0 12 7.857zM.775 11.225A.774.774 0 0 0 0 12c0 6.616 5.384 12 12 12 .43 0 .775-.346.775-.775a.774.774 0 0 0-.775-.776C6.238 22.45 1.55 17.762 1.55 12a.774.774 0 0 0-.775-.775zm3.932 0a.774.774 0 0 0-.775.775c0 4.448 3.62 8.068 8.068 8.068.43 0 .775-.346.775-.775a.774.774 0 0 0-.775-.775A6.524 6.524 0 0 1 5.482 12a.774.774 0 0 0-.775-.775zm3.926 0a.774.774 0 0 0-.776.775A4.145 4.145 0 0 0 12 16.143c.43 0 .775-.347.775-.776a.774.774 0 0 0-.775-.775A2.597 2.597 0 0 1 9.408 12a.774.774 0 0 0-.775-.775z"/></svg>
+                    SonarQube
+                </span>
+                <!-- JumpCloud (wordmark only — trademark guidelines restrict logo redistribution) -->
+                <span class="cert-badge cert-text" style="border-left-color:#2a50a1;">JumpCloud</span>
+                <!-- PortSwigger (official mark, simple-icons MIT-licensed set) -->
+                <span class="cert-badge" style="border-left-color:#FF6633;">
+                    <svg class="partner-logo" viewBox="0 0 24 24" fill="#FF6633"><path d="M0 0v24h10.718v-3.805l3.496-4.272h-3.496v-5.205H4.427l6.291-7.767V0Zm13.282 0v3.884L9.786 8.155h3.496v5.205h6.291l-6.291 7.767V24H24V0Z"/></svg>
+                    PortSwigger
+                </span>
+            </div>
+            <div class="marquee-content reverse">
+                <!-- duplicate for seamless loop -->
+                <span class="cert-badge" style="border-left-color:#4285F4;">
+                    <svg class="partner-logo" viewBox="0 0 24 24" fill="#4285F4"><path d="M12.19 2.38a9.344 9.344 0 0 0-9.234 6.893c.053-.02-.055.013 0 0-3.875 2.551-3.922 8.11-.247 10.941l.006-.007-.007.03a6.717 6.717 0 0 0 4.077 1.356h5.173l.03.03h5.192c6.687.053 9.376-8.605 3.835-12.35a9.365 9.365 0 0 0-2.821-4.552l-.043.043.006-.05A9.344 9.344 0 0 0 12.19 2.38zm-.358 4.146c1.244-.04 2.518.368 3.486 1.15a5.186 5.186 0 0 1 1.862 4.078v.518c3.53-.07 3.53 5.262 0 5.193h-5.193l-.008.009v-.04H6.785a2.59 2.59 0 0 1-1.067-.23h.001a2.597 2.597 0 1 1 3.437-3.437l3.013-3.012A6.747 6.747 0 0 0 8.11 8.24c.018-.01.04-.026.054-.023a5.186 5.186 0 0 1 3.67-1.69z"/></svg>
+                    Google Cloud
+                </span>
+                <span class="cert-badge cert-text" style="border-left-color:#FF9900;">AWS</span>
+                <span class="cert-badge cert-text" style="border-left-color:#0078D4;">Azure</span>
+                <span class="cert-badge cert-text" style="border-left-color:#81b5a1;">ServiceNow</span>
+                <span class="cert-badge" style="border-left-color:#181717;">
+                    <svg class="partner-logo" viewBox="0 0 24 24" fill="#181717"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+                    GitHub
+                </span>
+                <span class="cert-badge" style="border-left-color:#126ED3;">
+                    <svg class="partner-logo" viewBox="0 0 24 24" fill="#126ED3"><path d="M12 0a.774.774 0 0 0-.775.775c0 .43.346.776.775.776 5.762 0 10.45 4.687 10.45 10.449 0 .43.345.775.775.775A.774.774 0 0 0 24 12c0-6.616-5.384-12-12-12zm0 3.932a.774.774 0 0 0-.775.775c0 .43.346.775.775.775A6.524 6.524 0 0 1 18.518 12c0 .43.346.775.775.775.43 0 .775-.346.775-.775 0-4.448-3.62-8.068-8.068-8.068zm0 3.925a.774.774 0 0 0-.775.776c0 .43.346.775.775.775A2.597 2.597 0 0 1 14.592 12c0 .43.346.775.775.775.43 0 .776-.346.776-.775A4.145 4.145 0 0 0 12 7.857zM.775 11.225A.774.774 0 0 0 0 12c0 6.616 5.384 12 12 12 .43 0 .775-.346.775-.775a.774.774 0 0 0-.775-.776C6.238 22.45 1.55 17.762 1.55 12a.774.774 0 0 0-.775-.775zm3.932 0a.774.774 0 0 0-.775.775c0 4.448 3.62 8.068 8.068 8.068.43 0 .775-.346.775-.775a.774.774 0 0 0-.775-.775A6.524 6.524 0 0 1 5.482 12a.774.774 0 0 0-.775-.775zm3.926 0a.774.774 0 0 0-.776.775A4.145 4.145 0 0 0 12 16.143c.43 0 .775-.347.775-.776a.774.774 0 0 0-.775-.775A2.597 2.597 0 0 1 9.408 12a.774.774 0 0 0-.775-.775z"/></svg>
+                    SonarQube
+                </span>
+                <span class="cert-badge cert-text" style="border-left-color:#2a50a1;">JumpCloud</span>
+                <span class="cert-badge" style="border-left-color:#FF6633;">
+                    <svg class="partner-logo" viewBox="0 0 24 24" fill="#FF6633"><path d="M0 0v24h10.718v-3.805l3.496-4.272h-3.496v-5.205H4.427l6.291-7.767V0Zm13.282 0v3.884L9.786 8.155h3.496v5.205h6.291l-6.291 7.767V24H24V0Z"/></svg>
+                    PortSwigger
+                </span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ─── ENVIRONMENT MAP ─── -->
+    <section id="env" class="py-24 relative overflow-hidden">
+        <div class="max-w-[1200px] mx-auto px-6">
+            <div class="max-w-2xl mb-12 reveal">
+                <div class="text-cyan-600 font-mono text-sm font-semibold tracking-widest uppercase mb-3">Your environment, mapped</div>
+                <h2 class="font-display text-4xl font-bold text-slate-900 mb-4 tracking-tight">Three layers. Eight domains. Click any one.</h2>
+                <p class="text-lg text-slate-600">Inner ring: the asset actually worth protecting. Middle ring: the specific technology sitting in front of it. Outer ring: how we test and defend it.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center reveal delay-100">
+                <div class="relative w-full max-w-[520px] mx-auto aspect-square">
+                    <svg class="w-full h-full drop-shadow-xl" viewBox="0 0 520 520" id="env-svg"></svg>
+                </div>
+                <div class="bg-white/70 backdrop-blur-sm rounded-3xl shadow-glow-lg border border-cyan-100/60 p-8 md:p-10 h-full flex flex-col justify-center">
+                    <span class="font-mono text-xs font-bold text-cyan-600 tracking-wider uppercase mb-3" id="env-tag">PAYMENTS &amp; FINANCIAL RAILS</span>
+                    <h3 class="font-display text-3xl font-bold text-slate-900 mb-8" id="env-title">Where the money actually moves</h3>
+                    <div class="space-y-6">
+                        <div class="pl-4 border-l-4 border-slate-900">
+                            <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Crown jewel</div>
+                            <div class="text-slate-800 font-medium text-lg" id="env-cj">Core banking ledger &amp; payment rails</div>
+                        </div>
+                        <div class="pl-4 border-l-4 border-slate-600">
+                            <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Protecting technology</div>
+                            <div class="text-slate-800 font-medium text-lg" id="env-tech">Payment gateway APIs, tokenization, PCI workloads</div>
+                        </div>
+                        <div class="pl-4 border-l-4 border-cyan-500 bg-cyan-50/60 py-2 rounded-r-lg">
+                            <div class="text-xs font-bold text-cyan-600 uppercase tracking-wider mb-1">Our approach</div>
+                            <div class="text-cyan-900 font-semibold text-lg" id="env-approach">PCI DSS-aligned VAPT and transaction fraud testing</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ─── COMPLIANCE MAP (UPDATED) ─── -->
+    <section id="map" class="py-24 bg-white/90 border-t border-slate-200/70">
+        <div class="max-w-[1200px] mx-auto px-6">
+            <div class="max-w-2xl mb-12 reveal">
+                <div class="text-cyan-600 font-mono text-sm font-semibold tracking-widest uppercase mb-3">Compliance Map</div>
+                <h2 class="font-display text-4xl font-bold text-slate-900 mb-4 tracking-tight">Cross‑border data flows. One accountable team.</h2>
+                <p class="text-lg text-slate-600">Click a market to see its regulatory framework. Hover any badge for specific requirements &amp; deadlines.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-8 reveal delay-100 items-stretch">
+                <!-- Map container -->
+                <div class="bg-slate-800 rounded-2xl border border-slate-700 p-2 overflow-hidden shadow-inner relative flex flex-col justify-center min-h-[420px]" id="map-container">
+                    <!-- SVG injected by D3 -->
+                </div>
+
+                <!-- Detail Panel – fixed height, with legend at bottom -->
+                <div class="bg-slate-900 text-white rounded-2xl shadow-xl p-6 md:p-8 h-full flex flex-col justify-start relative overflow-y-auto max-h-[420px] no-scrollbar" style="scrollbar-width: none; -ms-overflow-style: none;">
+                    <div class="absolute top-0 right-0 w-48 h-48 bg-cyan-500 rounded-full blur-3xl opacity-10 pointer-events-none translate-x-1/2 -translate-y-1/2"></div>
+                    <div id="map-info-panel" class="crossfade space-y-3 w-full flex-1 overflow-visible">
+                        <!-- populated by JS -->
+                    </div>
+                    <!-- Legend – fixed at bottom -->
+                    <div class="legend-container">
+                        <span class="legend-item"><span class="dot active"></span> Active (no deadline)</span>
+                        <span class="legend-item"><span class="dot deadline-pending"></span> Active (deadline pending)</span>
+                        <span class="legend-item"><span class="dot deadline-passed"></span> Active (deadline passed)</span>
+                        <span class="legend-item"><span class="dot pending"></span> Proposed / Pending</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ─── SELF-ASSESS (5 DOMAINS, 1-5 SCALE) ─── -->
+    <section id="assess" class="py-24 relative overflow-hidden bg-slate-900">
+        <div class="absolute inset-0 bg-grid opacity-8"></div>
+        <div class="max-w-[1200px] mx-auto px-6 relative z-10">
+            <div class="text-center max-w-3xl mx-auto mb-16 reveal">
+                <span class="font-mono text-sm font-bold text-cyan-400 tracking-widest uppercase mb-4 block">Maturity Self-Assessment</span>
+                <h2 class="font-display text-4xl font-bold text-white mb-6">Rate yourself. Get a score and a roadmap.</h2>
+                <p class="text-lg text-slate-300">Move the sliders honestly. Our engine analyzes your weakest links and generates a phase‑based roadmap.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-12 mb-16 reveal delay-100">
+                <!-- Sliders (5 Domains) -->
+                <div class="space-y-6 bg-white/5 backdrop-blur-sm p-8 rounded-2xl border border-white/10 shadow-xl">
+                    <!-- 1. Strategy & Governance -->
+                    <div class="slider-container">
+                        <div class="flex justify-between text-white font-medium"><label>Strategy &amp; Governance</label><span id="v-govern" class="font-mono text-cyan-400 font-bold">3</span></div>
+                        <input type="range" min="1" max="5" value="3" id="s-govern">
+                        <div class="slider-numbers" data-target="s-govern">
+                            <span data-val="1">1</span><span data-val="2">2</span><span data-val="3">3</span><span data-val="4">4</span><span data-val="5">5</span>
+                        </div>
+                        <div class="slider-tooltip"></div>
+                    </div>
+                    <!-- 2. Infrastructure & Data Security -->
+                    <div class="slider-container">
+                        <div class="flex justify-between text-white font-medium"><label>Infrastructure &amp; Data Security</label><span id="v-infra" class="font-mono text-cyan-400 font-bold">3</span></div>
+                        <input type="range" min="1" max="5" value="3" id="s-infra">
+                        <div class="slider-numbers" data-target="s-infra">
+                            <span data-val="1">1</span><span data-val="2">2</span><span data-val="3">3</span><span data-val="4">4</span><span data-val="5">5</span>
+                        </div>
+                        <div class="slider-tooltip"></div>
+                    </div>
+                    <!-- 3. Identity & Access Management -->
+                    <div class="slider-container">
+                        <div class="flex justify-between text-white font-medium"><label>Identity &amp; Access Management</label><span id="v-iam" class="font-mono text-cyan-400 font-bold">3</span></div>
+                        <input type="range" min="1" max="5" value="3" id="s-iam">
+                        <div class="slider-numbers" data-target="s-iam">
+                            <span data-val="1">1</span><span data-val="2">2</span><span data-val="3">3</span><span data-val="4">4</span><span data-val="5">5</span>
+                        </div>
+                        <div class="slider-tooltip"></div>
+                    </div>
+                    <!-- 4. Monitoring & Detection -->
+                    <div class="slider-container">
+                        <div class="flex justify-between text-white font-medium"><label>Monitoring &amp; Detection</label><span id="v-detect" class="font-mono text-cyan-400 font-bold">3</span></div>
+                        <input type="range" min="1" max="5" value="3" id="s-detect">
+                        <div class="slider-numbers" data-target="s-detect">
+                            <span data-val="1">1</span><span data-val="2">2</span><span data-val="3">3</span><span data-val="4">4</span><span data-val="5">5</span>
+                        </div>
+                        <div class="slider-tooltip"></div>
+                    </div>
+                    <!-- 5. Compliance & Training -->
+                    <div class="slider-container">
+                        <div class="flex justify-between text-white font-medium"><label>Compliance &amp; Training</label><span id="v-training" class="font-mono text-cyan-400 font-bold">3</span></div>
+                        <input type="range" min="1" max="5" value="3" id="s-training">
+                        <div class="slider-numbers" data-target="s-training">
+                            <span data-val="1">1</span><span data-val="2">2</span><span data-val="3">3</span><span data-val="4">4</span><span data-val="5">5</span>
+                        </div>
+                        <div class="slider-tooltip"></div>
+                    </div>
+                </div>
+
+                <!-- Score Panel -->
+                <div class="bg-gradient-to-br from-cyan-900/30 to-slate-800/60 p-8 rounded-2xl border border-cyan-500/20 flex flex-col justify-center shadow-glow backdrop-blur-sm">
+                    <div class="flex items-baseline gap-4 mb-2">
+                        <div class="font-display text-6xl font-bold text-white" id="score-big">3.0</div>
+                        <div class="font-mono text-xs font-bold bg-cyan-500 text-slate-900 px-3 py-1 rounded-full uppercase" id="score-tier">DEVELOPING</div>
+                    </div>
+                    <div class="text-sm text-slate-400 mb-8">Composite resilience score — weakest-link weighted</div>
+                    <div id="gap-bars" class="space-y-3"></div>
+                </div>
+            </div>
+
+            <!-- Roadmap -->
+            <div class="border-t border-white/10 pt-12 reveal delay-200">
+                <div class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-8 text-center">Your implementation roadmap</div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="roadmap-steps">
+                    <!-- generated by JS -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ─── TRUST / WHY US ─── -->
+    <section id="trust" class="py-24 bg-white/90">
+        <div class="max-w-[1200px] mx-auto px-6">
+            <div class="text-cyan-600 font-mono text-sm font-semibold tracking-widest uppercase mb-3 reveal">Why a new firm</div>
+            <h2 class="font-display text-4xl font-bold text-slate-900 mb-12 max-w-3xl tracking-tight reveal">We're not going to pretend we have a decade of client logos.</h2>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-stretch reveal delay-100">
+                <div class="flex flex-col justify-center">
+                    <p class="font-display text-2xl leading-relaxed text-slate-800 mb-8">
+                        Most cybersecurity firms sell you <span class="text-cyan-600 font-semibold">their history</span>. We're selling you <span class="text-cyan-600 font-semibold">the practitioner doing the work</span> — scoped and led personally, not handed off to a rotating account team.
+                    </p>
+                    <div class="flex flex-wrap gap-3 mb-6">
+                        <span class="highlight-badge"><span class="icon">⏳</span> 15+ Year Advisory</span>
+                        <span class="highlight-badge"><span class="icon">🏛️</span> Big Four Trained</span>
+                        <span class="highlight-badge"><span class="icon">🌍</span> Pan-Africa &amp; GCC</span>
+                    </div>
+                    <div class="mt-2">
+                        <span class="text-xs text-slate-400 font-mono uppercase tracking-wider block mb-3">Building toward</span>
+                        <div class="flex flex-wrap gap-2 mt-1">
+                            <span class="text-xs bg-cyan-50 text-cyan-700 border border-cyan-200 rounded-full px-3 py-1 font-mono">Regulated Fintechs</span>
+                            <span class="text-xs bg-cyan-50 text-cyan-700 border border-cyan-200 rounded-full px-3 py-1 font-mono">African Banks</span>
+                            <span class="text-xs bg-cyan-50 text-cyan-700 border border-cyan-200 rounded-full px-3 py-1 font-mono">Utilities &amp; Energy</span>
+                            <span class="text-xs bg-cyan-50 text-cyan-700 border border-cyan-200 rounded-full px-3 py-1 font-mono">GCC Enterprises</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-50/80 border border-slate-200 p-8 rounded-3xl h-full shadow-sm hover:shadow-md transition-shadow flex flex-col justify-center">
+                    <span class="font-mono text-xs font-bold text-cyan-600 mb-3 block">WHAT "NEW" ACTUALLY MEANS HERE</span>
+                    <h3 class="font-display text-2xl font-bold text-slate-900 mb-6">No legacy to defend</h3>
+                    <ul class="space-y-4 text-slate-600 font-medium">
+                        <li class="flex items-start gap-3"><svg class="w-6 h-6 text-cyan-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>No inherited technical debt or outdated methodology to protect.</li>
+                        <li class="flex items-start gap-3"><svg class="w-6 h-6 text-cyan-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>Direct access to the lead consultant throughout the engagement.</li>
+                        <li class="flex items-start gap-3"><svg class="w-6 h-6 text-cyan-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>Boutique pricing without boutique gaps — full-stack coverage.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ─── FIELD NOTES ─── -->
+    <section id="notes" class="py-24 bg-slate-50/70 border-t border-slate-200/70">
+        <div class="max-w-[1200px] mx-auto px-6">
+            <div class="flex flex-col md:flex-row justify-between items-end mb-12 reveal">
+                <div class="max-w-xl">
+                    <div class="text-cyan-600 font-mono text-sm font-semibold tracking-widest uppercase mb-3">Field Notes</div>
+                    <h2 class="font-display text-4xl font-bold text-slate-900 tracking-tight">Original thinking on the region, published regularly.</h2>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 reveal delay-100">
+                <a href="#" class="note-card flex flex-col h-full bg-white p-8 rounded-2xl border border-slate-200 hover:shadow-xl transition-all duration-300 group">
+                    <span class="font-mono text-xs font-bold text-slate-400 mb-4 block">COMPLIANCE · NIGERIA</span>
+                    <h4 class="font-display text-xl font-bold text-slate-900 mb-4 group-hover:text-cyan-600 transition-colors">What GAID enforcement actually looks like in practice</h4>
+                    <p class="text-slate-600 text-sm mt-auto">Insights from the field — updated as engagements and regulatory shifts unfold.</p>
+                </a>
+                <a href="#" class="note-card flex flex-col h-full bg-white p-8 rounded-2xl border border-slate-200 hover:shadow-xl transition-all duration-300 group">
+                    <span class="font-mono text-xs font-bold text-slate-400 mb-4 block">CLOUD · AWS</span>
+                    <h4 class="font-display text-xl font-bold text-slate-900 mb-4 group-hover:text-cyan-600 transition-colors">Cloud misconfigurations we keep finding in utility environments</h4>
+                    <p class="text-slate-600 text-sm mt-auto">Insights from the field — updated as engagements and regulatory shifts unfold.</p>
+                </a>
+                <a href="#" class="note-card flex flex-col h-full bg-white p-8 rounded-2xl border border-slate-200 hover:shadow-xl transition-all duration-300 group">
+                    <span class="font-mono text-xs font-bold text-slate-400 mb-4 block">CROSS-BORDER · GCC</span>
+                    <h4 class="font-display text-xl font-bold text-slate-900 mb-4 group-hover:text-cyan-600 transition-colors">What GCC data protection means for African-run platforms</h4>
+                    <p class="text-slate-600 text-sm mt-auto">Insights from the field — updated as engagements and regulatory shifts unfold.</p>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ─── CONTACT ─── -->
+    <section id="contact" class="py-24 bg-white/90">
+        <div class="max-w-[1200px] mx-auto px-6 reveal">
+            <div class="text-center max-w-2xl mx-auto mb-16">
+                <h2 class="font-display text-4xl font-bold text-slate-900 mb-4 tracking-tight">Two paths in, depending on what you need.</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Enterprise & Utilities: real Netlify form, submits to ops@cyberrestart.com -->
+                <div class="flex flex-col h-full bg-slate-900 text-white p-10 rounded-3xl shadow-xl relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-cyan-500 rounded-full blur-3xl opacity-20 group-hover:opacity-40 transition-opacity"></div>
+                    <span class="font-mono text-xs font-bold text-cyan-400 tracking-wider uppercase mb-4">ENTERPRISE &amp; UTILITIES</span>
+                    <h3 class="font-display text-3xl font-bold mb-4">Talk to a lead consultant</h3>
+                    <p class="text-slate-300 mb-10 text-lg">For a defined engagement across any layer of the stack, scoped directly against your environment.</p>
+                    <form id="scoping-call-form" name="scoping-call" method="POST" data-netlify="true" netlify-honeypot="bot-field" class="mt-auto flex flex-col gap-3 relative z-10" onsubmit="return submitLeadForm(event, 'scoping-call-form', 'scoping-call-success');">
+                        <input type="hidden" name="form-name" value="scoping-call" />
+                        <p class="hidden"><label>Don't fill this out: <input name="bot-field" /></label></p>
+                        <input type="text" name="name" placeholder="Full name" required class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-400" />
+                        <input type="email" name="email" placeholder="Work email" required class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-400" />
+                        <input type="text" name="company" placeholder="Company" required class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-400" />
+                        <textarea name="message" rows="2" placeholder="What are you trying to solve?" class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 resize-none"></textarea>
+                        <button type="submit" class="inline-flex items-center justify-center bg-white text-slate-900 hover:bg-cyan-500 hover:text-white px-8 py-4 rounded-xl font-bold transition-colors w-max mt-1">Request a scoping call</button>
+                    </form>
+                    <div id="scoping-call-success" class="hidden mt-auto relative z-10">
+                        <p class="text-cyan-300 font-display text-xl font-bold mb-2">Request received.</p>
+                        <p class="text-slate-300">A lead consultant will reach out shortly.</p>
+                    </div>
+                </div>
+                <!-- Individuals & SMEs: real Netlify form, submits to ops@cyberrestart.com -->
+                <div class="flex flex-col h-full bg-cyan-50/70 border border-cyan-100/60 p-10 rounded-3xl shadow-lg hover:shadow-xl transition-shadow backdrop-blur-sm">
+                    <span class="font-mono text-xs font-bold text-cyan-600 tracking-wider uppercase mb-4">INDIVIDUALS &amp; SMEs</span>
+                    <h3 class="font-display text-3xl font-bold text-slate-900 mb-4">Get a free cyber checkup</h3>
+                    <p class="text-slate-600 mb-10 text-lg">Not sure what layer you need yet? We'll assess your current posture and tell you plainly.</p>
+                    <form id="free-checkup-form" name="free-checkup" method="POST" data-netlify="true" netlify-honeypot="bot-field" class="mt-auto flex flex-col gap-3" onsubmit="return submitLeadForm(event, 'free-checkup-form', 'free-checkup-success');">
+                        <input type="hidden" name="form-name" value="free-checkup" />
+                        <p class="hidden"><label>Don't fill this out: <input name="bot-field" /></label></p>
+                        <input type="text" name="name" placeholder="Full name" required class="w-full bg-white border border-cyan-200 rounded-lg px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500" />
+                        <input type="email" name="email" placeholder="Email" required class="w-full bg-white border border-cyan-200 rounded-lg px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500" />
+                        <input type="text" name="company" placeholder="Company (optional)" class="w-full bg-white border border-cyan-200 rounded-lg px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500" />
+                        <button type="submit" class="inline-flex items-center justify-center bg-cyan-600 text-white hover:bg-slate-900 px-8 py-4 rounded-xl font-bold transition-colors w-max shadow-md mt-1">Get a free checkup</button>
+                    </form>
+                    <div id="free-checkup-success" class="hidden mt-auto">
+                        <p class="text-cyan-700 font-display text-xl font-bold mb-2">Request received.</p>
+                        <p class="text-slate-600">We'll follow up with your assessment shortly.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Hidden form — never shown or submitted by a visitor directly. It exists
+         so Netlify registers "chat-lead" as a real form at build time, which
+         lets netlify/functions/ask.js submit to it server-side whenever a
+         visitor volunteers contact details in the chat instead of using a
+         real form. Set up its email notification the same way as the two
+         forms above: Site settings → Forms → Form notifications → chat-lead
+         → ops@cyberrestart.com. -->
+    <form name="chat-lead" data-netlify="true" netlify-honeypot="bot-field" hidden>
+        <input type="hidden" name="form-name" value="chat-lead" />
+        <input type="text" name="name" />
+        <input type="email" name="email" />
+        <input type="tel" name="phone" />
+        <input type="text" name="company" />
+        <input type="text" name="interest" />
+        <input type="text" name="original-message" />
+    </form>
+
+    <!-- ─── FOOTER ─── -->
+    <footer class="bg-slate-950 py-12 border-t border-slate-800/60">
+        <div class="max-w-[1200px] mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-2">
+                <img src="assets/images/CyberRestartLogoWithoutSlogan.png" alt="CyberRestart" class="h-8 w-auto" />
+            </div>
+            <div class="font-mono text-xs text-slate-500 uppercase tracking-widest text-center md:text-right">© 2026 DIGITAL RESILIENCE — AFRICA &amp; THE GCC</div>
+        </div>
+    </footer>
+
+    <!-- ─── FLOATING AI WIDGET ─── -->
+    <div id="ai-widget-container" class="fixed bottom-6 right-6 z-[100] flex flex-col items-end gap-4" style="pointer-events: none;">
+        <div id="ai-bubble" class="bg-white px-4 py-2 rounded-full shadow-lg border border-slate-200 text-sm font-medium text-slate-700 flex items-center gap-2 animate-bob cursor-pointer pointer-events-auto" onclick="toggleChat()">
+            <span class="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span> Have a question? Ask our AI
+        </div>
+        <div id="ai-chat-widget" class="closed w-[350px] h-[450px] bg-white/90 backdrop-blur-xl border border-slate-200 shadow-2xl rounded-2xl flex flex-col overflow-hidden">
+            <div class="bg-gradient-to-r from-slate-900 to-slate-800 p-4 text-white flex justify-between items-center shrink-0">
+                <div class="flex items-center gap-2"><svg class="w-5 h-5 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg><span class="font-display font-bold">CyberRestart AI</span></div>
+                <button onclick="toggleChat()" class="text-slate-300 hover:text-white transition-colors"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></button>
+            </div>
+            <div id="chat-messages" class="flex-1 p-4 overflow-y-auto flex flex-col gap-4 bg-slate-50/50">
+                <div class="chat-bubble self-start bg-slate-100 text-slate-800 p-3 rounded-2xl rounded-tl-sm text-sm border border-slate-200 max-w-[85%]">Hello! I'm the CyberRestart AI assistant. Do you have a question about our services, or would you like to escalate an issue to a lead consultant?</div>
+            </div>
+            <div class="p-3 bg-white border-t border-slate-200 flex items-center gap-2 shrink-0">
+                <input type="text" id="chat-input" maxlength="1000" placeholder="Type your message..." class="flex-1 bg-slate-100 border-none rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500" onkeypress="handleChatEnter(event)">
+                <button id="chat-send-btn" onclick="sendChatMessage()" class="bg-cyan-600 text-white p-2 rounded-full hover:bg-cyan-700 transition-colors"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>
+            </div>
+        </div>
+        <button id="ai-toggle-btn" onclick="toggleChat()" class="pointer-events-auto w-14 h-14 bg-slate-900 text-white rounded-full shadow-xl flex items-center justify-center hover:bg-cyan-600 hover:scale-105 transition-all focus:outline-none"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg></button>
+    </div>
+
+    <!-- ─── GLOBAL TOOLTIP (for framework badges) ─── -->
+    <div class="global-tooltip" id="globalTooltip"></div>
+
+    <!-- ─── JAVASCRIPT ─── -->
+    <script>
+        // ── Global tooltip for framework badges ──
+        const globalTooltip = document.getElementById('globalTooltip');
+        let tooltipTimeout = null;
+
+        function showFrameworkTooltip(e, content) {
+            if (tooltipTimeout) clearTimeout(tooltipTimeout);
+            globalTooltip.innerHTML = content;
+            globalTooltip.classList.add('visible');
+            // Position relative to cursor
+            let x = e.clientX + 12;
+            let y = e.clientY + 12;
+            // Keep within viewport
+            const tw = globalTooltip.offsetWidth || 200;
+            const th = globalTooltip.offsetHeight || 80;
+            if (x + tw > window.innerWidth - 10) x = e.clientX - tw - 12;
+            if (y + th > window.innerHeight - 10) y = e.clientY - th - 12;
+            if (x < 10) x = 10;
+            if (y < 10) y = 10;
+            globalTooltip.style.left = x + 'px';
+            globalTooltip.style.top = y + 'px';
+        }
+
+        function hideFrameworkTooltip() {
+            if (tooltipTimeout) clearTimeout(tooltipTimeout);
+            tooltipTimeout = setTimeout(() => {
+                globalTooltip.classList.remove('visible');
+            }, 150);
+        }
+
+        // Attach events to framework badges after rendering
+        function attachFrameworkTooltips() {
+            document.querySelectorAll('.framework-badge').forEach(badge => {
+                // Remove old listeners to avoid duplicates
+                badge.removeEventListener('mouseenter', onBadgeEnter);
+                badge.removeEventListener('mouseleave', onBadgeLeave);
+                badge.removeEventListener('mousemove', onBadgeMove);
+                badge.addEventListener('mouseenter', onBadgeEnter);
+                badge.addEventListener('mouseleave', onBadgeLeave);
+                badge.addEventListener('mousemove', onBadgeMove);
+            });
+        }
+
+        function onBadgeEnter(e) {
+            const badge = e.currentTarget;
+            const tooltipSpan = badge.querySelector('.badge-tooltip');
+            if (tooltipSpan) {
+                // Build content from the tooltip's inner HTML
+                const content = tooltipSpan.innerHTML;
+                showFrameworkTooltip(e, content);
+            }
+        }
+
+        function onBadgeLeave(e) {
+            hideFrameworkTooltip();
+        }
+
+        function onBadgeMove(e) {
+            // reposition tooltip
+            if (globalTooltip.classList.contains('visible')) {
+                const badge = e.currentTarget;
+                const tooltipSpan = badge.querySelector('.badge-tooltip');
+                if (tooltipSpan) {
+                    const content = tooltipSpan.innerHTML;
+                    showFrameworkTooltip(e, content);
+                }
+            }
+        }
+
+        // ── Mobile menu ──
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        function setMobileMenu(open) {
+            mobileMenu.classList.toggle('hidden', !open);
+            mobileMenuBtn.setAttribute('aria-expanded', open);
+            mobileMenuBtn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+        }
+        mobileMenuBtn.addEventListener('click', () => setMobileMenu(mobileMenu.classList.contains('hidden')));
+        mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => setMobileMenu(false)));
+        document.addEventListener('click', (e) => {
+            if (!mobileMenu.contains(e.target) && !mobileMenuBtn.contains(e.target)) setMobileMenu(false);
+        });
+
+        // ── Intersection Observer ──
+        const obsOptions = { root: null, rootMargin: '0px', threshold: 0.1 };
+        const obs = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                    obs.unobserve(entry.target);
+                }
+            });
+        }, obsOptions);
+        document.querySelectorAll('.reveal, .reveal-left, .reveal-right').forEach(el => obs.observe(el));
+
+        // ── Typewriter ──
+        const phrases = ["Moving to the cloud.", "Facing an audit deadline.", "Scaling engineering.", "Breach containment."];
+        let phraseIdx = 0,
+            charIdx = 0,
+            isDeleting = false;
+        const tw = document.getElementById('typewriter');
+        if (tw) {
+            (function type() {
+                const cur = phrases[phraseIdx];
+                if (isDeleting) {
+                    tw.textContent = cur.substring(0, charIdx - 1);
+                    charIdx--;
+                } else {
+                    tw.textContent = cur.substring(0, charIdx + 1);
+                    charIdx++;
+                }
+                let speed = isDeleting ? 50 : 100;
+                if (!isDeleting && charIdx === cur.length) { speed = 2000;
+                    isDeleting = true; } else if (isDeleting && charIdx === 0) { isDeleting = false;
+                    phraseIdx = (phraseIdx + 1) % phrases.length;
+                    speed = 500; }
+                setTimeout(type, speed);
+            })();
+        }
+
+        // ── Lead form submission (Netlify Forms, AJAX — no page reload) ──
+        function submitLeadForm(event, formId, successId) {
+            event.preventDefault();
+            const form = document.getElementById(formId);
+            const data = new FormData(form);
+            const button = form.querySelector('button[type="submit"]');
+            const buttonText = button.textContent;
+            button.disabled = true;
+            button.textContent = "Sending...";
+            fetch("/", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams(data).toString()
+            })
+                .then(res => {
+                    if (!res.ok) {
+                        throw new Error('Submission failed: ' + res.status);
+                    }
+                    form.classList.add('hidden');
+                    document.getElementById(successId).classList.remove('hidden');
+                })
+                .catch(() => {
+                    alert("Something went wrong. Please email us directly at intel@cyberrestart.com");
+                })
+                .finally(() => {
+                    button.disabled = false;
+                    button.textContent = buttonText;
+                });
+            return false;
+        }
+
+        // ── Hero AI (calls the real Netlify Function → Claude, see netlify/functions/ask.js) ──
+        const AI_TIMEOUT_MESSAGE = "Taking too long to respond. Try again or email intel@cyberrestart.com";
+
+        // POST to the AI function with a 15s client-side timeout. Rejects with
+        // an AbortError on timeout so callers can show AI_TIMEOUT_MESSAGE.
+        async function askAI(message, history) {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 15000);
+            try {
+                const res = await fetch('/.netlify/functions/ask', {
+                    signal: controller.signal,
+                    method: 'POST',
+                    headers: { 'content-type': 'application/json' },
+                    body: JSON.stringify({ message, history })
+                });
+                const data = await res.json();
+                clearTimeout(timeout);
+                return { ...data, ok: res.ok };
+            } catch (err) {
+                clearTimeout(timeout);
+                throw err;
+            }
+        }
+
+        // Plain-text render that keeps line breaks — never parses reply as HTML.
+        function setTextWithBreaks(element, text) {
+            element.textContent = '';
+            text.split('\n').forEach((line, i) => {
+                if (i > 0) element.appendChild(document.createElement('br'));
+                element.appendChild(document.createTextNode(line));
+            });
+        }
+
+        async function handleHeroAI() {
+            const input = document.getElementById('hero-ai-input');
+            const response = document.getElementById('hero-ai-response');
+            const button = document.getElementById('hero-ai-btn');
+            const q = input.value.trim();
+            if (!q || button.disabled) return;
+            button.disabled = true;
+            response.textContent = '🤖 Thinking...';
+            try {
+                const data = await askAI(q);
+                setTextWithBreaks(response, '🤖 ' + (data.reply || "Sorry, I couldn't process that — please try again."));
+            } catch (err) {
+                response.textContent = err.name === 'AbortError'
+                    ? '🤖 ' + AI_TIMEOUT_MESSAGE
+                    : "🤖 Something went wrong reaching our AI. Please try again, or use the contact form below.";
+            } finally {
+                button.disabled = false;
+            }
+        }
+        document.getElementById('hero-ai-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') handleHeroAI(); });
+
+        // ── Diagnostic buttons ──
+        const diagData = {
+            cloud: { tag: "BUILD LAYER", title: "Cloud architecture & DevOps", desc: "We design and stand up secure cloud environments and CI/CD pipelines — security built into the architecture, not bolted on after launch." },
+            audit: { tag: "COMPLY LAYER", title: "Audit-ready, on your timeline", desc: "We map your environment directly to the framework you're being audited against and close gaps before the assessor arrives." },
+            exposed: { tag: "DEFEND LAYER", title: "Incident readiness & response", desc: "We assess scope fast, contain what's active, and hand you a clear record of what happened and what changed." },
+            scaling: { tag: "OPERATE LAYER", title: "Security that scales with engineering", desc: "We embed security review into your growing DevOps pipeline so speed and safety stop trading off against each other." }
+        };
+        document.querySelectorAll('.diag-opt').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.diag-opt').forEach(b => {
+                    b.className =
+                        'diag-opt flex flex-col items-center justify-center gap-3 w-full p-4 rounded-2xl border-2 border-slate-200 bg-white text-slate-500 font-medium hover:border-slate-300 hover:bg-slate-50 transition-all h-32';
+                });
+                btn.className =
+                    'diag-opt flex flex-col items-center justify-center gap-3 w-full p-4 rounded-2xl border-2 border-cyan-500 bg-cyan-50/70 text-cyan-800 font-semibold transition-all shadow-sm h-32';
+                const d = diagData[btn.dataset.case];
+                document.getElementById('diag-tag').textContent = d.tag;
+                document.getElementById('diag-title').textContent = d.title;
+                document.getElementById('diag-desc').textContent = d.desc;
+            });
+        });
+
+        // ── Environment Map (SVG multi-ring) ──
+        const domainsEnv = [
+            { key: "payments", label: "PAYMENTS", tech: "GATEWAYS", tag: "PAYMENTS & FINANCIAL RAILS", title: "Where the money actually moves",
+                cj: "Core banking ledger & payment rails", techFull: "Payment gateway APIs, tokenization, PCI workloads",
+                approach: "PCI DSS-aligned VAPT and transaction fraud testing" },
+            { key: "identity", label: "IDENTITY", tech: "IAM/SSO", tag: "CUSTOMER IDENTITY & PII", title: "What an attacker resells first",
+                cj: "Customer PII & KYC records", techFull: "Azure AD/Okta identity providers, biometric KYC platforms",
+                approach: "NDPA/GCC PDPL-aligned data protection and IAM hardening" },
+            { key: "ot", label: "OT / IoT", tech: "SCADA/PLC", tag: "OPERATIONAL TECHNOLOGY", title: "Where downtime means physical impact",
+                cj: "Grid control & SCADA systems", techFull: "PLCs, RTUs, IoT sensors, OT network segments",
+                approach: "OT security assessment and air-gap validation" },
+            { key: "cloud", label: "CLOUD", tech: "AWS·AZURE", tag: "CLOUD INFRASTRUCTURE", title: "Where most exposure actually lives today",
+                cj: "Core application workloads & data stores", techFull: "AWS / Azure / GCP compute, Kubernetes, S3 / Blob storage",
+                approach: "Cloud posture management and misconfiguration remediation" },
+            { key: "devops", label: "DEVOPS", tech: "CI/CD", tag: "SOFTWARE SUPPLY CHAIN", title: "Where speed and safety trade off",
+                cj: "Source code & deployment secrets", techFull: "GitHub / GitLab, CI/CD pipelines, container registries",
+                approach: "DevSecOps integration, SBOM and pipeline hardening" },
+            { key: "endpoints", label: "ENDPOINTS", tech: "M365/EDR", tag: "ENDPOINTS & COMMS", title: "Where phishing actually lands",
+                cj: "Executive email & endpoint devices", techFull: "Microsoft 365 / Google Workspace, EDR agents",
+                approach: "Email security and endpoint detection & response" },
+            { key: "governance", label: "GOVERNANCE", tech: "GRC TOOLS", tag: "REGULATORY RECORDS", title: "What the regulator actually asks for first",
+                cj: "Compliance filings & audit evidence", techFull: "GRC platforms, document management systems",
+                approach: "Automated evidence collection and compliance dashboards" },
+            { key: "network", label: "NETWORK", tech: "FIREWALL", tag: "NETWORK & PERIMETER", title: "The boundary that's assumed, rarely tested",
+                cj: "Data center & branch network core", techFull: "Firewalls / WAF, VPN, SD-WAN",
+                approach: "Network segmentation and perimeter penetration testing" }
+        ];
+
+        const cx = 260,
+            cy = 260,
+            step = 360 / domainsEnv.length;
+        const svgEl = document.getElementById('env-svg');
+        const ns = "http://www.w3.org/2000/svg";
+
+        function polar(r, deg) {
+            const rad = (deg - 90) * Math.PI / 180;
+            return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+        }
+
+        function arcPath(r0, r1, start, end) {
+            const gap = 1;
+            const p1 = polar(r1, end - gap),
+                p2 = polar(r1, start + gap);
+            const p3 = polar(r0, start + gap),
+                p4 = polar(r0, end - gap);
+            const large = (end - start - 2 * gap) > 180 ? 1 : 0;
+            return `M ${p1.x} ${p1.y} A ${r1} ${r1} 0 ${large} 0 ${p2.x} ${p2.y} L ${p3.x} ${p3.y} A ${r0} ${r0} 0 ${large} 1 ${p4.x} ${p4.y} Z`;
+        }
+
+        function textArc(r, start, end) {
+            const p1 = polar(r, start),
+                p2 = polar(r, end);
+            const large = (end - start) > 180 ? 1 : 0;
+            return `M ${p1.x} ${p1.y} A ${r} ${r} 0 ${large} 1 ${p2.x} ${p2.y}`;
+        }
+
+        const wheel = document.createElementNS(ns, 'g');
+        wheel.setAttribute('class', 'env-wheel');
+
+        domainsEnv.forEach((d, i) => {
+            const start = i * step,
+                end = (i + 1) * step;
+            const g = document.createElementNS(ns, 'g');
+            g.setAttribute('class', 'env-domain');
+            g.setAttribute('data-key', d.key);
+
+            const rings = [
+                { r0: 70, r1: 130, cls: 'r1', fontSize: 16, label: '0' + (i + 1), dy: 5 },
+                { r0: 140, r1: 190, cls: 'r2', fontSize: 10, label: d.tech, dy: 3 },
+                { r0: 200, r1: 250, cls: 'r3', fontSize: 11, label: d.label, dy: 4 }
+            ];
+
+            rings.forEach((ring, idx) => {
+                const seg = document.createElementNS(ns, 'g');
+                seg.setAttribute('class', 'ring-seg ' + ring.cls);
+                const path = document.createElementNS(ns, 'path');
+                path.setAttribute('d', arcPath(ring.r0, ring.r1, start, end));
+                seg.appendChild(path);
+
+                const midR = (ring.r0 + ring.r1) / 2;
+                const pid = `tp-${i}-${idx}`;
+                const defs = document.createElementNS(ns, 'defs');
+                const tp = document.createElementNS(ns, 'path');
+                tp.setAttribute('id', pid);
+                tp.setAttribute('d', textArc(midR, start + 2, end - 2));
+                defs.appendChild(tp);
+                seg.appendChild(defs);
+
+                const txt = document.createElementNS(ns, 'text');
+                const tpath = document.createElementNS(ns, 'textPath');
+                tpath.setAttribute('href', '#' + pid);
+                tpath.setAttribute('startOffset', '50%');
+                tpath.setAttribute('text-anchor', 'middle');
+                tpath.setAttribute('dominant-baseline', 'central');
+                txt.setAttribute('font-size', ring.fontSize);
+                txt.setAttribute('dy', ring.dy);
+                tpath.textContent = ring.label;
+                txt.appendChild(tpath);
+                seg.appendChild(txt);
+                g.appendChild(seg);
+            });
+
+            g.addEventListener('click', () => {
+                document.querySelectorAll('.env-domain').forEach(el => el.classList.remove('active'));
+                g.classList.add('active');
+                renderEnv(d.key);
+            });
+            wheel.appendChild(g);
+        });
+        svgEl.appendChild(wheel);
+
+        // Hub
+        const hub = document.createElementNS(ns, 'g');
+        const hc = document.createElementNS(ns, 'circle');
+        hc.setAttribute('cx', cx);
+        hc.setAttribute('cy', cy);
+        hc.setAttribute('r', 58);
+        hc.setAttribute('fill', '#ffffff');
+        hc.setAttribute('stroke', '#e2e8f0');
+        hc.setAttribute('stroke-width', '2');
+        hub.appendChild(hc);
+        const ht1 = document.createElementNS(ns, 'text');
+        ht1.setAttribute('x', cx);
+        ht1.setAttribute('y', cy - 6);
+        ht1.setAttribute('text-anchor', 'middle');
+        ht1.setAttribute('font-size', '11');
+        ht1.setAttribute('font-weight', 'bold');
+        ht1.setAttribute('fill', '#64748b');
+        ht1.setAttribute('font-family', 'IBM Plex Mono');
+        ht1.textContent = 'ASSET';
+        hub.appendChild(ht1);
+        const ht2 = document.createElementNS(ns, 'text');
+        ht2.setAttribute('x', cx);
+        ht2.setAttribute('y', cy + 12);
+        ht2.setAttribute('text-anchor', 'middle');
+        ht2.setAttribute('font-size', '14');
+        ht2.setAttribute('font-weight', 'bold');
+        ht2.setAttribute('fill', '#0b1629');
+        ht2.setAttribute('font-family', 'Space Grotesk');
+        ht2.textContent = 'CORE';
+        hub.appendChild(ht2);
+        svgEl.appendChild(hub);
+
+        function renderEnv(key) {
+            const d = domainsEnv.find(x => x.key === key);
+            if (!d) return;
+            document.getElementById('env-tag').textContent = d.tag;
+            document.getElementById('env-title').textContent = d.title;
+            document.getElementById('env-cj').textContent = d.cj;
+            document.getElementById('env-tech').textContent = d.techFull;
+            document.getElementById('env-approach').textContent = d.approach;
+        }
+        document.querySelector('.env-domain')?.classList.add('active');
+        renderEnv('payments');
+
+        // ─── COMPLIANCE MAP – REBUILT WITH COMPREHENSIVE DATA ───
+        const mapData = [{
+            id: "566",
+            label: "Nigeria",
+            reg: "Nigeria Data Protection Commission (NDPC)",
+            frameworks: [
+                { name: "NDPA (GAID 2025)", status: "active", req: "Data localization, breach notification within 48h, DPCO filing.", deadline: "In effect since Sep 19, 2025", deadlineStatus: "passed" },
+                { name: "CBN Risk-Based Cybersecurity Framework", status: "active", req: "Risk classification, mandatory controls for financial institutions.", deadline: "Ongoing", deadlineStatus: "none" },
+                { name: "CBN Open Banking Framework", status: "active", req: "API security, data sharing, consent management.", deadline: "Guidelines effective 2024", deadlineStatus: "passed" },
+                { name: "CBN FIPS 140-3", status: "active", req: "Cryptographic module validation – implement by Dec 31, 2025.", deadline: "Dec 31, 2025", deadlineStatus: "pending" },
+                { name: "CBN Biometric MFA", status: "active", req: "Mandatory for financial institutions – July 1, 2025.", deadline: "July 1, 2025", deadlineStatus: "pending" },
+                { name: "NITDA AI Bias Audits", status: "active", req: "Annual audit for public‑facing AI systems.", deadline: "Annually", deadlineStatus: "none" },
+                { name: "NCC OT Monitoring", status: "active", req: "24/7 real‑time monitoring for critical OT.", deadline: "Ongoing", deadlineStatus: "none" }
+            ]
+        }, {
+            id: "404",
+            label: "Kenya",
+            reg: "Office of the Data Protection Commissioner (ODPC)",
+            frameworks: [
+                { name: "Data Protection Act, 2019", status: "active", req: "DPIA, breach notification, data subject rights.", deadline: "Ongoing", deadlineStatus: "none" },
+                { name: "Huduma Namba Integration", status: "pending", req: "National ID integration – target Dec 2026.", deadline: "Dec 2026", deadlineStatus: "pending" },
+                { name: "SBOM for Gov Procurement", status: "active", req: "Software Bill of Materials required for all government bids.", deadline: "Ongoing", deadlineStatus: "none" },
+                { name: "Digital Evidence Preservation", status: "active", req: "Chain‑of‑custody required for digital evidence.", deadline: "Ongoing", deadlineStatus: "none" }
+            ]
+        }, {
+            id: "288",
+            label: "Ghana",
+            reg: "Data Protection Commission",
+            frameworks: [
+                { name: "Data Protection Act, 2012", status: "active", req: "Registration, annual renewal, breach notification.", deadline: "Ongoing", deadlineStatus: "none" },
+                { name: "SEC Annual Testing", status: "active", req: "Yearly penetration testing for capital markets.", deadline: "Annually", deadlineStatus: "none" },
+                { name: "Cybersecurity Amendment Bill 2025", status: "pending", req: "Proposed 30% levy on cybersecurity professionals.", deadline: "Under consideration", deadlineStatus: "pending" },
+                { name: "Sectoral CERT Coordination", status: "active", req: "Immediate response required.", deadline: "Ongoing", deadlineStatus: "none" }
+            ]
+        }, {
+            id: "710",
+            label: "South Africa",
+            reg: "Information Regulator",
+            frameworks: [
+                { name: "POPIA Amendments", status: "active", req: "Written consent for direct marketing, breach reporting.", deadline: "Effective Apr 17, 2025", deadlineStatus: "passed" },
+                { name: "Joint Standard (Banks/Insurers)", status: "active", req: "R5M‑10M fines; effective June 2025.", deadline: "June 2025", deadlineStatus: "pending" },
+                { name: "Breach Reporting Tool", status: "active", req: "Mandatory from April 1, 2025.", deadline: "April 1, 2025", deadlineStatus: "passed" },
+                { name: "Financial Red Teaming", status: "active", req: "Annual for banking sector.", deadline: "Annually", deadlineStatus: "none" }
+            ]
+        }, {
+            id: "784",
+            label: "UAE",
+            reg: "UAE Data Office",
+            frameworks: [
+                { name: "Federal PDPL", status: "active", req: "Data protection, cross‑border transfer rules.", deadline: "Ongoing", deadlineStatus: "none" },
+                { name: "DESC On‑shore Processing", status: "active", req: "Immediate for government data.", deadline: "Immediate", deadlineStatus: "none" },
+                { name: "IA v2 (2025 Update)", status: "active", req: "AI/ML, IoT, Cloud, Post‑Quantum Crypto compliance.", deadline: "2025", deadlineStatus: "pending" },
+                { name: "ISR v3", status: "active", req: "Quarterly vuln assessments, annual pentests, tri‑annual recert.", deadline: "Q2 2025", deadlineStatus: "pending" }
+            ]
+        }, {
+            id: "682",
+            label: "Saudi Arabia",
+            reg: "SDAIA, SAMA / NCA",
+            frameworks: [
+                { name: "PDPL", status: "active", req: "Data localization, privacy by design.", deadline: "Ongoing", deadlineStatus: "none" },
+                { name: "NCNICC‑1:2025", status: "active", req: "Mandatory Dec 28, 2025 – 65 controls for large orgs.", deadline: "Dec 28, 2025", deadlineStatus: "pending" },
+                { name: "CNSA 2.0 Crypto", status: "pending", req: "Phased implementation to 2027.", deadline: "2027", deadlineStatus: "pending" },
+                { name: "NCA Third‑Party Audits", status: "active", req: "Annual independent assessment.", deadline: "Annually", deadlineStatus: "none" }
+            ]
+        }, {
+            id: "634",
+            label: "Qatar",
+            reg: "National Data Protection Framework",
+            frameworks: [
+                { name: "Law No. 13 of 2016", status: "active", req: "Data protection, cross‑border rules.", deadline: "Ongoing", deadlineStatus: "none" },
+                { name: "NIA Gov‑Cloud", status: "active", req: "Mandatory for government workloads.", deadline: "Ongoing", deadlineStatus: "none" },
+                { name: "ISASecure Certification", status: "active", req: "Required before vendor contract award.", deadline: "Ongoing", deadlineStatus: "none" },
+                { name: "National Incident Management", status: "active", req: "24‑hour Q‑ERT reporting.", deadline: "Ongoing", deadlineStatus: "none" }
+            ]
+        }, {
+            id: "414",
+            label: "Kuwait",
+            reg: "Sectoral Regulators",
+            frameworks: [
+                { name: "Sector‑specific rules", status: "active", req: "Financial sector guidelines.", deadline: "Ongoing", deadlineStatus: "none" },
+                { name: "PDPL (draft)", status: "pending", req: "National data protection law under development.", deadline: "TBD", deadlineStatus: "pending" }
+            ]
+        }, {
+            id: "048",
+            label: "Bahrain",
+            reg: "Personal Data Protection Authority",
+            frameworks: [
+                { name: "PDPL (2018)", status: "active", req: "Data protection, cross‑border transfers.", deadline: "Ongoing", deadlineStatus: "none" },
+                { name: "CBB Cybersecurity", status: "active", req: "Financial sector compliance.", deadline: "Ongoing", deadlineStatus: "none" }
+            ]
+        }, {
+            id: "512",
+            label: "Oman",
+            reg: "Ministry of Transport & IT",
+            frameworks: [
+                { name: "PDPL (2022)", status: "active", req: "Data localization, privacy rules.", deadline: "Ongoing", deadlineStatus: "none" },
+                { name: "National Cybersecurity Strategy", status: "active", req: "Sectoral regulations under development.", deadline: "Ongoing", deadlineStatus: "none" }
+            ]
+        }];
+
+        // ── D3 Map Rendering ──
+        const mw = 800,
+            mh = 400;
+        const container = document.getElementById('map-container');
+        container.innerHTML = '';
+        const d3svg = d3.select(container)
+            .append('svg')
+            .attr('viewBox', `0 0 ${mw} ${mh}`)
+            .attr('class', 'w-full h-auto drop-shadow-md');
+
+        const proj = d3.geoMercator().scale(350).translate([300, 240]);
+        const pathGen = d3.geoPath().projection(proj);
+
+        d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
+            .then(world => {
+                const features = topojson.feature(world, world.objects.countries).features;
+
+                d3svg.append('g').selectAll('path')
+                    .data(features)
+                    .enter().append('path')
+                    .attr('d', pathGen)
+                    .attr('class', 'country-path')
+                    .attr('fill', '#475569')
+                    .attr('stroke', '#64748b')
+                    .attr('stroke-width', '0.8')
+                    .attr('id', d => 'country-' + d.id)
+                    .on('mouseover', function() {
+                        if (!d3.select(this).classed('active')) d3.select(this).attr('fill', '#94a3b8');
+                    })
+                    .on('mouseout', function() {
+                        if (!d3.select(this).classed('active')) d3.select(this).attr('fill', '#475569');
+                    })
+                    .on('click', function(event, d) {
+                        const data = mapData.find(m => m.id === d.id);
+                        if (data) {
+                            d3.selectAll('.country-path').classed('active', false).attr('fill', '#475569').attr(
+                                'stroke', '#64748b').attr('stroke-width', '0.8');
+                            d3.select(this).classed('active', true).attr('fill', '#06b6d4').attr('stroke',
+                                '#2dd4e8').attr('stroke-width', '1.8');
+                            renderMapInfo(data);
+                        }
+                    });
+
+                mapData.forEach(d => {
+                    const node = d3.select('#country-' + d.id);
+                    if (!node.empty()) {
+                        const centroid = pathGen.centroid(node.datum());
+                        if (centroid && !isNaN(centroid[0]) && !isNaN(centroid[1])) {
+                            d3svg.append('circle')
+                                .attr('cx', centroid[0])
+                                .attr('cy', centroid[1])
+                                .attr('r', 3)
+                                .attr('fill', '#06b6d4')
+                                .style('pointer-events', 'none');
+                            d3svg.append('circle')
+                                .attr('cx', centroid[0])
+                                .attr('cy', centroid[1])
+                                .attr('r', 3)
+                                .attr('class', 'ping-circle');
+                        }
+                    }
+                });
+
+                const defaultCountry = mapData.find(d => d.id === "566");
+                if (defaultCountry) {
+                    const node = d3.select('#country-566');
+                    if (!node.empty()) {
+                        node.classed('active', true).attr('fill', '#06b6d4').attr('stroke', '#2dd4e8').attr(
+                        'stroke-width', '1.8');
+                        renderMapInfo(defaultCountry);
+                    }
+                }
+            })
+            .catch(() => {
+                container.innerHTML =
+                    '<div class="flex items-center justify-center h-full text-slate-300 text-sm font-mono">Map data unavailable — please refresh</div>';
+            });
+
+        // ── Render Info Panel with framework badges ──
+        function renderMapInfo(data) {
+            const panel = document.getElementById('map-info-panel');
+            panel.style.opacity = 0;
+            setTimeout(() => {
+                let html = `
+                    <div class="mb-2">
+                        <span class="font-mono text-xs font-bold text-cyan-400 tracking-wider uppercase">${data.label}</span>
+                        <h3 class="font-display text-2xl font-bold text-white mt-1">Regulatory landscape</h3>
+                    </div>
+                    <div class="law-item">
+                        <div class="label">Regulator</div>
+                        <div class="value text-sm">${data.reg}</div>
+                    </div>
+                    <div>
+                        <div class="label mb-1">Applicable Frameworks</div>
+                        <div class="flex flex-wrap gap-1 mt-1" style="overflow: visible !important;">
+                `;
+                data.frameworks.forEach(fw => {
+                    let dotClass = 'active';
+                    let statusText = '';
+                    if (fw.status === 'pending') {
+                        dotClass = 'pending';
+                        statusText = 'Proposed';
+                    } else {
+                        if (fw.deadlineStatus === 'none') dotClass = 'active';
+                        else if (fw.deadlineStatus === 'pending') dotClass = 'deadline-pending';
+                        else if (fw.deadlineStatus === 'passed') dotClass = 'deadline-passed';
+                    }
+                    // Build tooltip content
+                    let tooltipContent = fw.req;
+                    if (fw.deadline && fw.deadlineStatus !== 'none') {
+                        tooltipContent += `<span class="deadline-text">⏰ Deadline: ${fw.deadline}</span>`;
+                    } else if (fw.deadlineStatus === 'none') {
+                        tooltipContent += `<span class="deadline-ok">✓ Ongoing</span>`;
+                    }
+                    if (fw.status === 'pending') {
+                        tooltipContent += `<span class="deadline-text">⏳ Under review</span>`;
+                    }
+                    html += `
+                        <span class="framework-badge">
+                            <span class="status-dot ${dotClass}"></span>
+                            ${fw.name}
+                            <span class="badge-tooltip" style="display:none;">${tooltipContent}</span>
+                        </span>
+                    `;
+                });
+                html += `
+                        </div>
+                    </div>
+                `;
+                panel.innerHTML = html;
+                panel.style.opacity = 1;
+                // Attach tooltip events to new badges
+                attachFrameworkTooltips();
+            }, 350);
+        }
+
+        // ── Maturity Assessment (5 Domains, 1-5 scale) ──
+        const sliderIds = ['s-govern', 's-infra', 's-iam', 's-detect', 's-training'];
+        const valueIds = ['v-govern', 'v-infra', 'v-iam', 'v-detect', 'v-training'];
+        const domainLabels = ['Strategy & Governance', 'Infrastructure & Data Security', 'Identity & Access Management',
+            'Monitoring & Detection', 'Compliance & Training'
+        ];
+        let vals = [3, 3, 3, 3, 3];
+
+        const maturityDescriptions = [
+            // Strategy & Governance
+            [
+                "No formal governance or cybersecurity strategy. Policies are ad‑hoc and unenforced.",
+                "Initial strategy drafted but not communicated or funded. Basic policies exist but lack accountability.",
+                "Defined governance structure with documented policies and assigned roles. Periodic reviews occur, but enforcement is inconsistent.",
+                "Mature governance with comprehensive policies, automated controls, regular audits, and clear escalation paths. Metrics are tracked.",
+                "Optimized governance with continuous improvement, predictive analytics, full automation, and board‑level oversight. Dynamic policy adaptation."
+            ],
+            // Infrastructure & Data Security
+            [
+                "No security controls for infrastructure. Data is unprotected, and vulnerabilities are widespread.",
+                "Basic firewall and antivirus deployed. Patching is sporadic, and encryption is not enforced.",
+                "Standardized encryption, regular patching, and baseline security configurations are in place. Monitoring is manual.",
+                "Automated vulnerability management, network segmentation, and full data encryption. Security is integrated into infrastructure lifecycle.",
+                "Zero‑trust architecture with micro‑segmentation, automated threat response, and continuous compliance validation."
+            ],
+            // Identity & Access Management
+            [
+                "Password‑only authentication. No MFA, no role‑based access control.",
+                "Basic MFA enabled for some users, but privileged accounts are not properly managed. Access reviews are rare.",
+                "MFA and RBAC enforced across all systems. Privileged access is logged and reviewed periodically.",
+                "Privileged Access Management (PAM) with just‑in‑time access, automated provisioning, and regular access reviews.",
+                "Zero‑trust identity with continuous verification, risk‑based adaptive authentication, and full lifecycle automation."
+            ],
+            // Monitoring & Detection
+            [
+                "No logging or monitoring. Security events are not detected or recorded.",
+                "Basic logs are collected but not analyzed. Alerts are generated but often ignored.",
+                "SIEM deployed with alerts for critical events. Some threat hunting is performed manually.",
+                "24/7 SOC with threat hunting, automated incident response, and integrated threat intelligence.",
+                "AI‑driven threat intelligence, automated detection and response, predictive analytics, and real‑time risk scoring."
+            ],
+            // Compliance & Training
+            [
+                "No compliance program or security awareness training. No mapping to regulatory frameworks.",
+                "Annual basic awareness training completed. Compliance is reactive, with no formal mapping to frameworks.",
+                "Compliance mapped to major frameworks (NDPA, POPIA, etc.) with documented policies. Training is regular and tailored.",
+                "Continuous compliance monitoring, automated evidence collection, and role‑based training with phishing simulations.",
+                "Compliance fully automated, with real‑time gap detection, integrated training culture, and board‑level reporting."
+            ]
+        ];
+
+        // Click on number to set slider value AND show tooltip
+        document.querySelectorAll('.slider-numbers').forEach((container, idx) => {
+            const targetId = container.dataset.target;
+            const slider = document.getElementById(targetId);
+            const tooltip = slider.parentElement.querySelector('.slider-tooltip');
+
+            container.querySelectorAll('span').forEach(span => {
+                span.addEventListener('click', () => {
+                    const val = parseInt(span.dataset.val, 10);
+                    slider.value = val;
+                    slider.dispatchEvent(new Event('input'));
+                    container.querySelectorAll('span').forEach(s => s.classList.toggle('active', parseInt(s
+                        .dataset.val) === val));
+                });
+                span.addEventListener('mouseenter', (e) => {
+                    const rating = parseInt(span.dataset.val, 10);
+                    const desc = maturityDescriptions[idx]?.[rating - 1] || '';
+                    if (desc) {
+                        tooltip.textContent = desc;
+                        tooltip.classList.add('visible');
+                    }
+                });
+                span.addEventListener('mouseleave', () => {
+                    tooltip.classList.remove('visible');
+                });
+            });
+        });
+
+        function updateScore() {
+            const w = [1, 1.2, 1, 1.2, 1.1];
+            const weighted = vals.map((v, i) => v * w[i]);
+            const avg = weighted.reduce((a, b) => a + b, 0) / w.reduce((a, b) => a + b, 0);
+            const score = Math.round(avg * 10) / 10;
+            document.getElementById('score-big').textContent = score.toFixed(1);
+            let tier = 'DEVELOPING';
+            if (score >= 4.2) tier = 'ADVANCED';
+            else if (score >= 3.2) tier = 'PROGRESSING';
+            document.getElementById('score-tier').textContent = tier;
+
+            const gapContainer = document.getElementById('gap-bars');
+            gapContainer.innerHTML = '';
+            const sorted = domainLabels.map((l, i) => ({ label: l, val: vals[i], pct: (vals[i] / 5) * 100 }));
+            sorted.sort((a, b) => a.val - b.val);
+            sorted.forEach(item => {
+                const bar = document.createElement('div');
+                bar.className = 'flex items-center gap-4';
+                const label = document.createElement('span');
+                label.className = 'text-xs font-mono text-slate-400 w-36 shrink-0 truncate';
+                label.textContent = item.label;
+                const track = document.createElement('div');
+                track.className = 'flex-1 h-2 bg-slate-700/50 rounded-full overflow-hidden';
+                const fill = document.createElement('div');
+                fill.className = 'h-full bg-cyan-500 rounded-full transition-all duration-500';
+                fill.style.width = item.pct + '%';
+                track.appendChild(fill);
+                const valSpan = document.createElement('span');
+                valSpan.className = 'text-xs font-mono text-white w-8 text-right';
+                valSpan.textContent = item.val;
+                bar.appendChild(label);
+                bar.appendChild(track);
+                bar.appendChild(valSpan);
+                gapContainer.appendChild(bar);
+            });
+
+            // Roadmap
+            const roadmap = document.getElementById('roadmap-steps');
+            roadmap.innerHTML = '';
+
+            const govern = vals[0],
+                infra = vals[1],
+                iam = vals[2],
+                detect = vals[3],
+                training = vals[4];
+
+            let steps = [];
+            let phase1Items = ["Define cybersecurity strategy and governance structure."];
+            if (govern < 3) phase1Items.push("Conduct a comprehensive risk assessment.");
+            if (iam < 3) phase1Items.push("Implement baseline identity and access controls (MFA, RBAC).");
+            if (infra < 3) phase1Items.push("Inventory and classify data assets.");
+            if (training < 3) phase1Items.push("Launch a basic security awareness program.");
+            steps.push({ num: "01", title: "Foundation & Governance", desc: "Establish governance, risk, and baseline controls.", items: phase1Items });
+
+            let phase2Items = [];
+            if (infra < 4) phase2Items.push("Harden cloud/on‑prem infrastructure against misconfigurations.");
+            if (iam < 4) phase2Items.push("Implement privileged access management (PAM) and conditional access.");
+            if (infra < 3) phase2Items.push("Deploy data encryption at rest and in transit.");
+            if (training < 3) phase2Items.push("Map compliance frameworks (NDPA, POPIA, etc.) and start evidence collection.");
+            if (phase2Items.length === 0) phase2Items.push("Infrastructure hardening is well advanced – maintain through continuous compliance.");
+            steps.push({ num: "02", title: "Infrastructure Hardening", desc: "Deploy technical controls to harden infrastructure.", items: phase2Items });
+
+            let phase3Items = [];
+            if (detect < 4) phase3Items.push("Deploy SIEM and EDR for real‑time threat detection.");
+            if (detect < 3) phase3Items.push("Establish a threat intelligence program.");
+            if (training < 4) phase3Items.push("Conduct advanced security training and phishing simulations.");
+            if (phase3Items.length === 0) phase3Items.push("Monitoring and detection are mature – focus on threat hunting and advanced analytics.");
+            steps.push({ num: "03", title: "Detect & Respond", desc: "Activate continuous monitoring, detection, and response.", items: phase3Items });
+
+            let phase4Items = [];
+            if (training < 5) phase4Items.push("Achieve continuous compliance with real‑time gap detection.");
+            if (training < 4) phase4Items.push("Embed security culture through continuous learning and gamification.");
+            if (detect < 5) phase4Items.push("Integrate automated compliance monitoring and reporting.");
+            if (phase4Items.length === 0) phase4Items.push("Resilience is embedded – focus on board‑level reporting and benchmarking.");
+            steps.push({ num: "04", title: "Recover & Improve", desc: "Build resilience through recovery, testing, and continuous improvement.", items: phase4Items });
+
+            steps.forEach(s => {
+                const div = document.createElement('div');
+                div.className = 'roadmap-step';
+                div.innerHTML = `
+                    <div class="step-num">${s.num}</div>
+                    <h4>${s.title}</h4>
+                    <p>${s.desc}</p>
+                    <ul>${s.items.map(i => `<li>${i}</li>`).join('')}</ul>
+                `;
+                roadmap.appendChild(div);
+            });
+        }
+
+        sliderIds.forEach((id, i) => {
+            const el = document.getElementById(id);
+            el.addEventListener('input', () => {
+                vals[i] = parseInt(el.value, 10);
+                document.getElementById(valueIds[i]).textContent = vals[i];
+                const container = el.parentElement.querySelector('.slider-numbers');
+                if (container) {
+                    container.querySelectorAll('span').forEach(span => {
+                        span.classList.toggle('active', parseInt(span.dataset.val) === vals[i]);
+                    });
+                }
+                updateScore();
+            });
+            const container = el.parentElement.querySelector('.slider-numbers');
+            if (container) {
+                container.querySelectorAll('span').forEach(span => {
+                    span.classList.toggle('active', parseInt(span.dataset.val) === vals[i]);
+                });
+            }
+        });
+        updateScore();
+
+        // ── AI Chat ──
+        let chatOpen = false;
+        let conversationHistory = [];
+
+        function pushHistory(role, content) {
+            conversationHistory.push({ role, content });
+            if (conversationHistory.length > 10) {
+                conversationHistory = conversationHistory.slice(-10);
+            }
+        }
+
+        function toggleChat() {
+            const widget = document.getElementById('ai-chat-widget');
+            const bubble = document.getElementById('ai-bubble');
+            const container = document.getElementById('ai-widget-container');
+            chatOpen = !chatOpen;
+            container.style.pointerEvents = chatOpen ? 'auto' : 'none';
+            if (chatOpen) {
+                widget.classList.remove('closed');
+                bubble.style.display = 'none';
+                document.getElementById('chat-input').focus();
+            } else {
+                widget.classList.add('closed');
+                bubble.style.display = 'flex';
+            }
+        }
+
+        function handleChatEnter(e) {
+            if (e.key === 'Enter') sendChatMessage();
+        }
+
+        async function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const button = document.getElementById('chat-send-btn');
+            const text = input.value.trim();
+            if (!text || button.disabled) return;
+            button.disabled = true;
+            const messages = document.getElementById('chat-messages');
+            const userMsg = document.createElement('div');
+            userMsg.className = 'chat-bubble self-end bg-cyan-600 text-white p-3 rounded-2xl rounded-tr-sm text-sm shadow-sm max-w-[85%]';
+            userMsg.textContent = text;
+            messages.appendChild(userMsg);
+            input.value = '';
+            messages.scrollTop = messages.scrollHeight;
+
+            const typingMsg = document.createElement('div');
+            typingMsg.className = 'chat-bubble self-start bg-slate-100 text-slate-800 p-3 rounded-2xl rounded-tl-sm text-sm border border-slate-200 max-w-[85%]';
+            typingMsg.textContent = '···';
+            messages.appendChild(typingMsg);
+            messages.scrollTop = messages.scrollHeight;
+
+            pushHistory('user', text);
+
+            // Calls the real Netlify Function → Groq, see netlify/functions/ask.js
+            try {
+                const data = await askAI(text, conversationHistory);
+                typingMsg.textContent = data.reply || "Sorry, I couldn't process that — please try again or use the contact form below.";
+                // Only real answers go into history — not the server's fallback error replies.
+                if (data.ok && data.reply) pushHistory('assistant', data.reply);
+            } catch (err) {
+                typingMsg.textContent = err.name === 'AbortError'
+                    ? AI_TIMEOUT_MESSAGE
+                    : "I'm having trouble connecting right now — please use the contact form below and a consultant will follow up directly.";
+            } finally {
+                messages.scrollTop = messages.scrollHeight;
+                button.disabled = false;
+            }
+        }
+
+        // ── initial tooltip attachment for any existing badges ──
+        attachFrameworkTooltips();
+    </script>
+</body>
+</html>
