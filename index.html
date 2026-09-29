@@ -814,6 +814,149 @@
             opacity: 0.5;
             cursor: not-allowed;
         }
+
+        /* ── products section (dark break below the light hero) ── */
+        .products-section {
+            background: #09090f;
+            padding: 80px 0;
+        }
+        .products-label {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.875rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #06b6d4;
+            margin-bottom: 12px;
+        }
+        .products-heading {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.15;
+            letter-spacing: -0.02em;
+            color: #f8fafc;
+            max-width: 720px;
+            margin-bottom: 16px;
+        }
+        .products-subheading {
+            font-size: 1.125rem;
+            color: #94a3b8;
+            margin-bottom: 48px;
+        }
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+        .product-card {
+            --card-color: #06b6d4;
+            --card-color-hover: #0891b2;
+            display: flex;
+            flex-direction: column;
+            background: #0d0d14;
+            border: 1px solid #1e1e2e;
+            border-top: 3px solid var(--card-color);
+            border-radius: 12px;
+            padding: 32px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+        }
+        .product-card--reveil {
+            --card-color: #8b5cf6;
+            --card-color-hover: #7c3aed;
+        }
+        .product-card:hover {
+            border-color: #2e2e44;
+            border-top-color: var(--card-color);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transform: translateY(-2px);
+        }
+        .product-badge {
+            align-self: flex-start;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            color: var(--card-color);
+            border: 1px solid var(--card-color);
+            border-radius: 9999px;
+            padding: 4px 12px;
+            margin-bottom: 20px;
+        }
+        .product-name {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: #f8fafc;
+            margin-bottom: 8px;
+        }
+        .product-tagline {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.125rem;
+            font-weight: 500;
+            color: #e2e8f0;
+            margin-bottom: 16px;
+        }
+        .product-desc {
+            font-size: 0.95rem;
+            line-height: 1.7;
+            color: #94a3b8;
+            margin-bottom: 24px;
+        }
+        .product-features {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 32px;
+        }
+        .product-features li {
+            position: relative;
+            padding-left: 20px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: #cbd5e1;
+        }
+        .product-features li + li {
+            margin-top: 10px;
+        }
+        .product-features li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0.55em;
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+            background: var(--card-color);
+        }
+        .product-cta {
+            margin-top: auto;
+            align-self: flex-start;
+            background: var(--card-color);
+            color: #ffffff;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: background 0.2s ease;
+        }
+        .product-cta:hover {
+            background: var(--card-color-hover);
+        }
+        .product-cta:focus-visible {
+            outline: 2px solid #f8fafc;
+            outline-offset: 2px;
+        }
+        @media (max-width: 767px) {
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+            .products-heading {
+                font-size: 1.875rem;
+            }
+            .product-card {
+                padding: 24px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -868,6 +1011,7 @@
                 <img src="assets/images/cyberrestartlogolightversion3.png" alt="CyberRestart" class="h-10 object-contain group-hover:opacity-75 transition-opacity" />
             </a>
             <div class="hidden md:flex items-center gap-8 font-sans font-medium text-sm text-slate-600">
+                <a href="#products" class="hover:text-cyan-600 transition-colors">Products</a>
                 <a href="#env" class="hover:text-cyan-600 transition-colors">Environment</a>
                 <a href="#map" class="hover:text-cyan-600 transition-colors">Compliance map</a>
                 <a href="#assess" class="hover:text-cyan-600 transition-colors">Self-assess</a>
@@ -882,6 +1026,7 @@
         </nav>
         <div id="mobile-menu" class="hidden md:hidden absolute left-0 right-0 top-full bg-slate-900 border-t border-slate-800 shadow-xl">
             <div class="px-6 py-4 flex flex-col font-sans font-medium text-sm">
+                <a href="#products" class="py-3 text-slate-300 hover:text-cyan-400 transition-colors">Products</a>
                 <a href="#env" class="py-3 text-slate-300 hover:text-cyan-400 transition-colors">Environment</a>
                 <a href="#map" class="py-3 text-slate-300 hover:text-cyan-400 transition-colors">Compliance map</a>
                 <a href="#assess" class="py-3 text-slate-300 hover:text-cyan-400 transition-colors">Self-assess</a>
@@ -969,6 +1114,47 @@
                     <a href="#contact" class="shrink-0 bg-slate-900 text-white hover:bg-cyan-600 px-6 py-3 rounded-full font-medium transition-colors shadow-md whitespace-nowrap">
                         Solve this problem
                     </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ─── PRODUCTS ─── -->
+    <section id="products" class="products-section">
+        <div class="max-w-[1200px] mx-auto px-6">
+            <div class="reveal">
+                <div class="products-label">Our Products</div>
+                <h2 class="products-heading">Two tools. Instant intelligence. No consultant required.</h2>
+                <p class="products-subheading">Run independently or as part of a broader engagement.</p>
+            </div>
+
+            <div class="products-grid reveal delay-100">
+                <!-- ReSurface -->
+                <div class="product-card">
+                    <span class="product-badge">EXTERNAL ATTACK SURFACE MANAGEMENT</span>
+                    <h3 class="product-name">ReSurface</h3>
+                    <p class="product-tagline">See your organisation the way an attacker does.</p>
+                    <p class="product-desc">ReSurface scans everything your organisation exposes to the internet — subdomains, APIs, admin panels, cloud infrastructure, mobile apps, and executive profiles — and delivers a board-ready intelligence report in under two hours. Every finding maps to NDPA 2023, CBN, POPIA, or the relevant framework for your jurisdiction, with penalty exposure in local currency.</p>
+                    <ul class="product-features">
+                        <li>8 scanning modules, 1 unified report</li>
+                        <li>Attack chains — how findings combine into real threats</li>
+                        <li>Regulatory penalty exposure in local currency</li>
+                    </ul>
+                    <a href="#contact" class="product-cta">Request a free scan</a>
+                </div>
+
+                <!-- ReVeil -->
+                <div class="product-card product-card--reveil">
+                    <span class="product-badge">PRIVACY COMPLIANCE INTELLIGENCE</span>
+                    <h3 class="product-name">ReVeil</h3>
+                    <p class="product-tagline">What your privacy policy says vs what your website does.</p>
+                    <p class="product-desc">ReVeil loads your website in a real browser and intercepts every cookie, tracker, and network request before consent is given. It then reads your privacy policy and surfaces every contradiction between what you claim and what actually happens — direct NDPA 2023, GDPR, and POPIA violation mapping per finding.</p>
+                    <ul class="product-features">
+                        <li>Real browser interception — not a policy audit</li>
+                        <li>Claim vs reality, contradiction by contradiction</li>
+                        <li>NDPA, GDPR, POPIA mapped per finding</li>
+                    </ul>
+                    <a href="#contact" class="product-cta">Request a ReVeil scan</a>
                 </div>
             </div>
         </div>
