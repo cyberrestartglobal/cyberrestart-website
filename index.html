@@ -809,12 +809,6 @@
             border-color: #06b6d4;
         }
 
-        /* free scan submit stays disabled until domain ownership is confirmed */
-        #free-scan-form button[type="submit"]:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
         /* ── products section (dark break below the light hero) ── */
         .products-section {
             background: #09090f;
@@ -1140,7 +1134,7 @@
                         <li>Attack chains — how findings combine into real threats</li>
                         <li>Regulatory penalty exposure in local currency</li>
                     </ul>
-                    <a href="#contact" class="product-cta">Request a free scan</a>
+                    <a href="https://resurface.cyberrestart.com" target="_blank" rel="noopener" class="product-cta">Run a free scan →</a>
                 </div>
 
                 <!-- ReVeil -->
@@ -1502,43 +1496,13 @@
                         <p class="text-slate-300">A lead consultant will reach out shortly.</p>
                     </div>
                 </div>
-                <!-- Free ReSurface scan: real Netlify form (free-scan-request) -->
-                <div class="flex flex-col h-full bg-cyan-50/70 border border-cyan-100/60 p-10 rounded-3xl shadow-lg hover:shadow-xl transition-shadow backdrop-blur-sm">
+                <!-- Free ReSurface scan: links to the ReSurface app (OTP-verified request flow) -->
+                <a href="https://resurface.cyberrestart.com" target="_blank" rel="noopener" class="group flex flex-col h-full bg-cyan-50/70 border border-cyan-100/60 p-10 rounded-3xl shadow-lg hover:shadow-xl transition-shadow backdrop-blur-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500">
                     <p class="font-mono text-xs font-bold text-cyan-600 tracking-wider uppercase mb-4">EARLY ACCESS</p>
                     <h3 class="font-display text-3xl font-bold text-slate-900 mb-4">Free ReSurface Scan</h3>
                     <p class="text-slate-600 mb-10 text-lg">Enter your domain and work email. We run a full external attack surface scan and send you the top findings within 24 hours — no commitment required.</p>
-                    <form id="free-scan-form" name="free-scan-request" method="POST" data-netlify="true" netlify-honeypot="bot-field" class="mt-auto flex flex-col gap-3" onsubmit="return submitLeadForm(event, 'free-scan-form', 'free-scan-success');">
-                        <input type="hidden" name="form-name" value="free-scan-request" />
-                        <p class="hidden"><label>Don't fill this out: <input name="bot-field" /></label></p>
-                        <input type="text" name="domain" placeholder="yourdomain.com" required class="w-full bg-white border border-cyan-200 rounded-lg px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500" />
-                        <input type="email" name="email" placeholder="you@yourcompany.com" required class="w-full bg-white border border-cyan-200 rounded-lg px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500" />
-                        <label style="display:flex;
-                                      align-items:flex-start;
-                                      gap:10px;
-                                      cursor:pointer;
-                                      margin-bottom:12px;">
-                            <input type="checkbox"
-                                   id="domain-ownership"
-                                   name="domain-ownership"
-                                   required
-                                   style="margin-top:3px;
-                                          flex-shrink:0;
-                                          accent-color:#4f6ef7;">
-                            <span style="font-size:12px;
-                                         color:#94a3b8;
-                                         line-height:1.5;">
-                                I confirm I own or am authorised to request a scan of this domain, and I agree to the
-                                <a href="/privacy" style="color:#4f6ef7;">Privacy Policy</a>
-                            </span>
-                        </label>
-                        <button type="submit" class="inline-flex items-center justify-center bg-cyan-600 text-white hover:bg-slate-900 px-8 py-4 rounded-xl font-bold transition-colors w-max shadow-md mt-1">Request free scan →</button>
-                        <p class="text-xs text-slate-500">We verify domain ownership before running any scan.</p>
-                    </form>
-                    <div id="free-scan-success" class="hidden mt-auto">
-                        <p class="text-cyan-700 font-display text-xl font-bold mb-2">Request received.</p>
-                        <p class="text-slate-600">We'll follow up with your assessment shortly.</p>
-                    </div>
-                </div>
+                    <span class="mt-auto inline-flex items-center justify-center bg-cyan-600 text-white group-hover:bg-slate-900 px-8 py-4 rounded-xl font-bold transition-colors w-max shadow-md">Start your free scan →</span>
+                </a>
             </div>
         </div>
     </section>
@@ -1688,16 +1652,6 @@
                 } catch (e) {}
                 banner.style.opacity = '0';
                 setTimeout(() => { banner.style.display = 'none'; }, 300);
-            });
-        })();
-
-        // ── Free scan: submit enabled only once domain ownership is confirmed ──
-        (function () {
-            const ownership = document.getElementById('domain-ownership');
-            const submitBtn = document.querySelector('#free-scan-form button[type="submit"]');
-            submitBtn.disabled = !ownership.checked;
-            ownership.addEventListener('change', () => {
-                submitBtn.disabled = !ownership.checked;
             });
         })();
 
